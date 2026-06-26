@@ -79,6 +79,20 @@ class Project extends Model
         return null;
     }
 
+    public function totalPhotosSize(): int
+    {
+        return (int) $this->galleries->flatMap->photos->sum('file_size');
+    }
+
+    public function formattedTotalPhotosSize(): string
+    {
+        $bytes = $this->totalPhotosSize();
+        if ($bytes === 0) return '0 B';
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $i = (int) floor(log($bytes, 1024));
+        return round($bytes / pow(1024, $i), 2) . ' ' . $units[$i];
+    }
+
     // --- Scopes ---
 
     public function scopeActive(Builder $query): Builder

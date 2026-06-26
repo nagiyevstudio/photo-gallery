@@ -130,6 +130,9 @@
 <!-- --- 3. SETTINGS TAB --- -->
 <div class="tab-content" id="settings-tab" x-data="{ isProtected: {{ $project->is_password_protected ? 'true' : 'false' }} }">
     <div class="card">
+        <form id="generate-zip-form" action="{{ route('admin.projects.generate-zip', $project->id) }}" method="POST" style="display: none;">
+            @csrf
+        </form>
         <h3 class="card-title">Project Configuration</h3>
         
         <form action="{{ route('admin.projects.update', $project->id) }}" method="POST" enctype="multipart/form-data">
@@ -206,28 +209,74 @@
                 </label>
             </div>
 
-            <div class="form-group" style="margin-top: 24px; margin-bottom: 32px;">
-                <label for="zip_file" class="form-label">Upload Originals ZIP Archive (Optional)</label>
+            <div class="form-group" style="margin-top: 24px; margin-bottom: 32px; border-top: 1px solid var(--border-color); padding-top: 24px;">
+                <label class="form-label">ZIP Archive Management</label>
+
+                <!-- Current ZIP Status -->
                 @if(file_exists(storage_path("app/zips/{$project->id}.zip")))
-                    <p style="font-size:13px; color: var(--accent); margin-bottom: 8px;">
-                        ✓ Active ZIP archive exists on server: {{ round(filesize(storage_path("app/zips/{$project->id}.zip")) / 1024 / 1024, 2) }} MB.
-                    </p>
+                    <div style="background: rgba(200, 169, 126, 0.05); border: 1px solid rgba(200, 169, 126, 0.2); padding: 16px; border-radius: 6px; margin-bottom: 16px;">
+                        <p style="font-size:14px; color: var(--accent); margin-bottom: 4px; font-weight: 500;">
+                            ✓ ZIP Archive is ready on server
+                        </p>
+                        <p style="font-size:13px; color: var(--text-secondary); margin-bottom: 0;">
+                            Size: {{ round(filesize(storage_path("app/zips/{$project->id}.zip")) / 1024 / 1024, 2) }} MB. Clients can download it immediately.
+                        </p>
+                    </div>
                 @else
-                    <p style="font-size:13px; color: var(--text-secondary); margin-bottom: 8px;">
-                        No ZIP file uploaded yet.
-                    </p>
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 16px; border-radius: 6px; margin-bottom: 16px; color: var(--text-secondary);">
+                        <p style="font-size:13px; margin-bottom: 0;">
+                            No active ZIP archive on the server. Clients will not be able to download all photos as a ZIP until an archive is compiled or uploaded.
+                        </p>
+                    </div>
                 @endif
-                <input 
-                    type="file" 
-                    name="zip_file" 
-                    id="zip_file" 
-                    class="form-control" 
-                    accept=".zip"
-                >
-                <p style="font-size:12px; color: var(--text-muted); margin-top: 8px;">
-                    💡 <strong>Tip for large files:</strong> To avoid browser upload limits or timeouts, you can upload the ZIP archive directly via FTP to the folder:<br>
-                    <code>www/nagiyev_studio/gallery.nagiyev.com/storage/app/zips/{{ $project->id }}.zip</code>
-                </p>
+
+                @php
+                    $totalBytes = $project->totalPhotosSize();
+                    $isTooLarge = $totalBytes > 2 * 1024 * 1024 * 1024; // 2 GB threshold
+                @endphp
+
+                <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px; background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); padding: 16px; border-radius: 6px;">
+                    <p style="font-size:13px; color: var(--text-secondary); margin-bottom: 0;">
+                        Total size of original photos: <strong>{{ $project->formattedTotalPhotosSize() }}</strong>
+                    </p>
+
+                    @if($isTooLarge)
+                        <div style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); padding: 12px; border-radius: 6px; color: var(--text-secondary); font-size: 13px; line-height: 1.5;">
+                            <p style="color: var(--danger); font-weight: 500; margin-bottom: 6px;">
+                                ⚠️ Size exceeds 2 GB threshold
+                            </p>
+                            To prevent server timeouts, compiling via the browser is disabled. Please package the photos on your computer and upload the ZIP archive directly via FTP to:
+                            <br><code style="display: block; margin-top: 8px; background: #000; padding: 6px 10px; border-radius: 4px; color: #fff; font-size:12px;">www/nagiyev_studio/gallery.nagiyev.com/storage/app/zips/{{ $project->id }}.zip</code>
+                        </div>
+                    @else
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0;">
+                                You can compile the ZIP archive directly on the server (packages files without compression, takes only a few seconds).
+                            </p>
+                            <button type="submit" form="generate-zip-form" class="btn btn-secondary" style="width: fit-content; background: var(--accent); color: #000; border-color: var(--accent); padding: 8px 16px; font-weight: 500;">
+                                ⚙ Compile ZIP on Server
+                            </button>
+                        </div>
+                    @endif
+
+                    <div style="border-top: 1px dashed var(--border-color); padding-top: 16px; display: flex; flex-direction: column; gap: 10px;">
+                        <p style="font-size: 13px; color: var(--text-secondary); font-weight: 500; margin-bottom: 0;">
+                            Alternative: Upload Pre-made ZIP
+                        </p>
+                        
+                        <input 
+                            type="file" 
+                            name="zip_file" 
+                            id="zip_file" 
+                            class="form-control" 
+                            accept=".zip"
+                            style="max-width: 400px;"
+                        >
+                        <p style="font-size:12px; color: var(--text-muted); margin-bottom: 0; line-height: 1.4;">
+                            💡 <strong>Web limit warning:</strong> For larger files (over 100MB), web upload might fail. In that case, upload the ZIP archive via FTP to the folder above.
+                        </p>
+                    </div>
+                </div>
             </div>
 
             <div style="display: flex; gap: 16px; border-top: 1px solid var(--border-color); padding-top: 24px;">

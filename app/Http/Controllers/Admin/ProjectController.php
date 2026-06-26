@@ -138,4 +138,69 @@ class ProjectController extends Controller
 
         return redirect()->route('admin.projects.index')->with('success', 'Project deleted successfully!');
     }
+
+    /**
+     * Generate ZIP archive synchronously.
+     */
+    public function generateZip(Project $project)
+    {
+        $maxBytes = 2 * 1024 * 1024 * 1024; // 2 GB
+        $totalSize = $project->totalPhotosSize();
+
+        if ($totalSize > $maxBytes) {
+            return redirect()->back()
+                ->with('error', 'The project is too large (' . $project->formattedTotalPhotosSize() . ') to generate a ZIP via browser. Please upload the ZIP archive directly via FTP.')
+                ->with('tab', 'settings');
+        }
+
+        set_time_limit(300); // 5 minutes max
+
+        $zipDir = storage_path('app/zips');
+        if (!file_exists($zipDir)) {
+            mkdir($zipDir, 0755, true);
+        }
+
+        $zipPath = $zipDir . '/' . $project->id . '.zip';
+
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            return redirect()->back()
+                ->with('error', 'Failed to initialize ZIP archive.')
+                ->with('tab', 'settings');
+        }
+
+        $project->load('galleries.photos');
+        $photoAddedCount = 0;
+
+        foreach ($project->galleries as $gallery) {
+            $galleryDir = Str::ascii($gallery->title);
+            $galleryDir = preg_replace('/[^A-Za-z0-9 _-]/', '', $galleryDir);
+            $galleryDir = trim($galleryDir);
+
+            foreach ($gallery->photos as $photo) {
+                $photoFullPath = storage_path('app/' . $photo->original_path);
+                if (file_exists($photoFullPath)) {
+                    $zipPathInArchive = "{$galleryDir}/{$photo->original_filename}";
+                    $zip->addFile($photoFullPath, $zipPathInArchive);
+                    $zip->setCompressionName($zipPathInArchive, \ZipArchive::CM_STORE);
+                    $photoAddedCount++;
+                }
+            }
+        }
+
+        $zip->close();
+
+        if ($photoAddedCount === 0) {
+            if (file_exists($zipPath)) {
+                unlink($zipPath);
+            }
+            return redirect()->back()
+                ->with('error', 'The project contains no valid original images to package.')
+                ->with('tab', 'settings');
+        }
+
+        return redirect()->route('admin.projects.show', [$project->id, 'tab' => 'settings'])
+            ->with('success', 'ZIP archive compiled successfully! (' . round(filesize($zipPath) / 1024 / 1024, 2) . ' MB)')
+            ->with('tab', 'settings');
+    }
 }

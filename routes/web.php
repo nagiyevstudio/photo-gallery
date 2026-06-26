@@ -30,6 +30,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('upload', [PhotoController::class, 'upload'])->name('upload');
             Route::post('photos/sort', [PhotoController::class, 'sort'])->name('photos.sort');
             Route::delete('photos/{photo}', [PhotoController::class, 'destroy'])->name('photos.destroy');
+            Route::post('generate-zip', [ProjectController::class, 'generateZip'])->name('generate-zip');
         });
     });
 });
