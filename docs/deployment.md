@@ -80,7 +80,7 @@ The application relies on the Laravel Scheduler to handle queue jobs (like proce
 Access the server via SSH and edit the crontab for the web user (e.g., `crontab -e`):
 
 ```bash
-* * * * * cd /path/to/your/project && php artisan schedule:run >> /dev/null 2>&1
+* * * * * cd /www/nagiyev_studio/gallery.nagiyev.com && php artisan schedule:run >> /dev/null 2>&1
 ```
 
 > [!IMPORTANT]
@@ -95,7 +95,7 @@ Once the deployment action runs for the first time, log in via SSH and perform t
 ### 1. Initialize Admin User
 Run the seeder to create the initial admin user (`admin@gallery.nagiyev.com` / `changeme`):
 ```bash
-cd /path/to/your/project
+cd /www/nagiyev_studio/gallery.nagiyev.com
 php artisan db:seed --class=AdminSeeder
 ```
 
