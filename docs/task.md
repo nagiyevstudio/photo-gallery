@@ -80,6 +80,6 @@
 - [x] Git init + push
 - [x] GitHub Actions CI/CD pipeline
 - [x] Server setup documentation
-- [ ] Deploy to gallery.nagiyev.com
-- [ ] Cron configuration
-- [ ] Production testing
+- [x] Deploy to gallery.nagiyev.com
+- [x] Cron configuration
+- [x] Production testing
