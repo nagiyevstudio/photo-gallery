@@ -210,11 +210,11 @@
                 <label for="zip_file" class="form-label">Upload Originals ZIP Archive (Optional)</label>
                 @if(file_exists(storage_path("app/zips/{$project->id}.zip")))
                     <p style="font-size:13px; color: var(--accent); margin-bottom: 8px;">
-                        ✓ Currently uploaded: {{ round(filesize(storage_path("app/zips/{$project->id}.zip")) / 1024 / 1024, 2) }} MB ZIP archive.
+                        ✓ Active ZIP archive exists on server: {{ round(filesize(storage_path("app/zips/{$project->id}.zip")) / 1024 / 1024, 2) }} MB.
                     </p>
                 @else
                     <p style="font-size:13px; color: var(--text-secondary); margin-bottom: 8px;">
-                        No ZIP file uploaded yet. Upload a pre-made ZIP archive of all original high-res photos for client download.
+                        No ZIP file uploaded yet.
                     </p>
                 @endif
                 <input 
@@ -224,6 +224,10 @@
                     class="form-control" 
                     accept=".zip"
                 >
+                <p style="font-size:12px; color: var(--text-muted); margin-top: 8px;">
+                    💡 <strong>Tip for large files:</strong> To avoid browser upload limits or timeouts, you can upload the ZIP archive directly via FTP to the folder:<br>
+                    <code>www/nagiyev_studio/gallery.nagiyev.com/storage/app/zips/{{ $project->id }}.zip</code>
+                </p>
             </div>
 
             <div style="display: flex; gap: 16px; border-top: 1px solid var(--border-color); padding-top: 24px;">
