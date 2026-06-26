@@ -56,6 +56,11 @@ Route::prefix('api')->group(function () {
     Route::get('downloads/{token}/file', [\App\Http\Controllers\Api\DownloadController::class, 'downloadZip']);
 });
 
+// --- Landing Page Route ---
+Route::get('/', function () {
+    return view('landing');
+});
+
 // --- Public Client SPA Catch-all Route ---
 Route::get('/{slug}', function () {
     return view('gallery.app');
