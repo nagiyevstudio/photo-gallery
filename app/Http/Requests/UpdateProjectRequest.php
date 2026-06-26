@@ -26,6 +26,7 @@ class UpdateProjectRequest extends FormRequest
             'password' => ['nullable', 'string', 'min:4'],
             'allow_download' => ['boolean'],
             'status' => ['required', 'in:active,archived'],
+            'zip_file' => ['nullable', 'file', 'mimes:zip'],
         ];
     }
 

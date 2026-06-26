@@ -108,6 +108,12 @@ class ProjectController extends Controller
 
         $project->update($data);
 
+        if ($request->hasFile('zip_file')) {
+            $zipFile = $request->file('zip_file');
+            Storage::makeDirectory('zips');
+            $zipFile->storeAs('zips', "{$project->id}.zip");
+        }
+
         return redirect()->route('admin.projects.show', $project->id)
             ->with('success', 'Project settings updated successfully!')
             ->with('tab', 'settings');
@@ -122,6 +128,7 @@ class ProjectController extends Controller
         Storage::disk('local')->deleteDirectory('originals/' . $project->id);
         Storage::disk('local')->deleteDirectory('web/' . $project->id);
         Storage::disk('local')->deleteDirectory('thumbnails/' . $project->id);
+        Storage::disk('local')->delete('zips/' . $project->id . '.zip');
         
         // Also delete any compiled public web/thumbnail directories if they exist
         Storage::disk('public')->deleteDirectory('web/' . $project->id);

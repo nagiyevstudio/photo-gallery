@@ -59,17 +59,25 @@ class DownloadController extends Controller
             return response()->json(['error' => 'Downloading is disabled for this project.'], 403);
         }
 
+        $zipRelativePath = "zips/{$project->id}.zip";
+        $zipFullPath = storage_path("app/{$zipRelativePath}");
+
+        if (!file_exists($zipFullPath)) {
+            return response()->json(['error' => 'No ZIP archive uploaded for this project.'], 404);
+        }
+
         $token = Str::uuid()->toString();
 
-        // Put generating status in cache (lasts for 2 hours)
-        Cache::put("zip:{$token}", ['status' => 'generating'], 7200);
-
-        // Dispatch background ZIP generation
-        GenerateZip::dispatch($project->id, $token);
+        // Put ready status in cache (lasts for 2 hours)
+        Cache::put("zip:{$token}", [
+            'status' => 'ready',
+            'project_id' => $project->id,
+            'size' => filesize($zipFullPath)
+        ], 7200);
 
         return response()->json([
             'token' => $token,
-            'message' => 'ZIP generation started'
+            'message' => 'ZIP archive is ready for download'
         ], 202);
     }
 
@@ -98,7 +106,7 @@ class DownloadController extends Controller
             abort(404, 'ZIP archive is not ready or has expired.');
         }
 
-        $zipPath = storage_path("app/zips/{$token}.zip");
+        $zipPath = storage_path("app/zips/{$status['project_id']}.zip");
 
         if (!file_exists($zipPath)) {
             abort(404, 'ZIP archive file not found.');

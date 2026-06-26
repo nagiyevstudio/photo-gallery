@@ -132,7 +132,7 @@
     <div class="card">
         <h3 class="card-title">Project Configuration</h3>
         
-        <form action="{{ route('admin.projects.update', $project->id) }}" method="POST">
+        <form action="{{ route('admin.projects.update', $project->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -204,6 +204,26 @@
                     <span class="switch-slider"></span>
                     <span class="form-label" style="margin-bottom: 0;">Allow Download (Client can download original photos)</span>
                 </label>
+            </div>
+
+            <div class="form-group" style="margin-top: 24px; margin-bottom: 32px;">
+                <label for="zip_file" class="form-label">Upload Originals ZIP Archive (Optional)</label>
+                @if(file_exists(storage_path("app/zips/{$project->id}.zip")))
+                    <p style="font-size:13px; color: var(--accent); margin-bottom: 8px;">
+                        ✓ Currently uploaded: {{ round(filesize(storage_path("app/zips/{$project->id}.zip")) / 1024 / 1024, 2) }} MB ZIP archive.
+                    </p>
+                @else
+                    <p style="font-size:13px; color: var(--text-secondary); margin-bottom: 8px;">
+                        No ZIP file uploaded yet. Upload a pre-made ZIP archive of all original high-res photos for client download.
+                    </p>
+                @endif
+                <input 
+                    type="file" 
+                    name="zip_file" 
+                    id="zip_file" 
+                    class="form-control" 
+                    accept=".zip"
+                >
             </div>
 
             <div style="display: flex; gap: 16px; border-top: 1px solid var(--border-color); padding-top: 24px;">
