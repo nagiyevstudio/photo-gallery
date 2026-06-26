@@ -12,6 +12,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: gd, zip, mbstring, xml, curl, mysql
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -23,47 +32,10 @@ jobs:
       - name: Build frontend assets
         run: npm run build
 
-      - name: Install SSH Key
-        uses: shimataro/ssh-key-action@v2
+      - name: Deploy files via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          key: ${{ secrets.SSH_KEY }}
-          known_hosts: 'unimportant-placeholder'
-          if_key_exists: replace
-
-      - name: Add host to Known Hosts
-        run: |
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Deploy files via rsync
-        run: |
-          rsync -avz --delete \
-            --exclude='/.git/' \
-            --exclude='/node_modules/' \
-            --exclude='/.env' \
-            --exclude='/storage/app/originals/' \
-            --exclude='/storage/app/web/' \
-            --exclude='/storage/app/thumbnails/' \
-            --exclude='/storage/app/zips/' \
-            --exclude='/storage/app/public/web/' \
-            --exclude='/storage/app/public/thumbnails/' \
-            --exclude='/database/database.sqlite' \
-            ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}
-
-      - name: Run post-deployment commands on server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd ${{ secrets.DEPLOY_PATH }}
-            # Install Composer dependencies (exclude dev dependencies)
-            composer install --no-dev --optimize-autoloader --no-interaction
-            # Run database migrations
-            php artisan migrate --force
-            # Clear and optimize cache
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-            # Ensure storage symlink exists
-            php artisan storage:link
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /
