@@ -46,9 +46,14 @@ class PhotoController extends Controller
             $safeFilename = Str::uuid() . '.' . $file->getClientOriginalExtension();
 
             // Save original file to storage/app/originals/{project_id}/{gallery_id}/
+            // Use explicit path to avoid Laravel 11 'local' disk pointing to private/
             $originalRelDir = "originals/{$project->id}/{$gallery->id}";
-            Storage::makeDirectory($originalRelDir);
-            $originalPath = $file->storeAs($originalRelDir, $safeFilename);
+            $fullDir = storage_path('app/' . $originalRelDir);
+            if (!is_dir($fullDir)) {
+                mkdir($fullDir, 0755, true);
+            }
+            $file->move($fullDir, $safeFilename);
+            $originalPath = $originalRelDir . '/' . $safeFilename;
 
             $nextPhotoSortOrder = ($gallery->photos()->max('sort_order') ?? 0) + 1;
 
@@ -108,17 +113,24 @@ class PhotoController extends Controller
     {
         $gallery = $photo->gallery;
 
-        // Delete physical files
-        if (Storage::exists($photo->original_path)) {
-            Storage::delete($photo->original_path);
+        // Delete physical files using explicit paths
+        $originalFullPath = storage_path('app/' . $photo->original_path);
+        if (file_exists($originalFullPath)) {
+            unlink($originalFullPath);
         }
 
-        if ($photo->web_path && Storage::exists('public/' . $photo->web_path)) {
-            Storage::delete('public/' . $photo->web_path);
+        if ($photo->web_path) {
+            $webFullPath = storage_path('app/public/' . $photo->web_path);
+            if (file_exists($webFullPath)) {
+                unlink($webFullPath);
+            }
         }
 
-        if ($photo->thumbnail_path && Storage::exists('public/' . $photo->thumbnail_path)) {
-            Storage::delete('public/' . $photo->thumbnail_path);
+        if ($photo->thumbnail_path) {
+            $thumbFullPath = storage_path('app/public/' . $photo->thumbnail_path);
+            if (file_exists($thumbFullPath)) {
+                unlink($thumbFullPath);
+            }
         }
 
         // If the deleted photo was the hero image, reset project's hero photo

@@ -42,11 +42,13 @@ class GenerateZip implements ShouldQueue
             return;
         }
 
-        // Ensure temporary zips folder exists
-        Storage::makeDirectory('zips');
+        // Ensure zips folder exists (explicit path, not via Storage facade)
+        $zipsDir = storage_path('app/zips');
+        if (!is_dir($zipsDir)) {
+            mkdir($zipsDir, 0755, true);
+        }
 
-        $zipFileName = "zips/{$this->token}.zip";
-        $zipFullPath = storage_path("app/{$zipFileName}");
+        $zipFullPath = "{$zipsDir}/{$this->token}.zip";
 
         $zip = new ZipArchive();
 
