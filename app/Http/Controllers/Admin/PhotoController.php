@@ -122,6 +122,30 @@ class PhotoController extends Controller
     }
 
     /**
+     * Set an existing processed photo as the project cover.
+     */
+    public function setHero(Project $project, Photo $photo)
+    {
+        abort_unless($photo->gallery?->project_id === $project->id, 404);
+
+        if (! $photo->is_processed || ! $photo->web_path) {
+            return redirect()->route('admin.projects.show', [
+                'project' => $project->id,
+                'gallery_id' => $photo->gallery_id,
+                'tab' => 'gallery',
+            ])->with('error', 'The photo must finish processing before it can be used as a cover.');
+        }
+
+        $project->update(['hero_photo_id' => $photo->id]);
+
+        return redirect()->route('admin.projects.show', [
+            'project' => $project->id,
+            'gallery_id' => $photo->gallery_id,
+            'tab' => 'gallery',
+        ])->with('success', 'Project cover updated successfully!');
+    }
+
+    /**
      * Delete a photo.
      */
     public function destroy(Project $project, Photo $photo)

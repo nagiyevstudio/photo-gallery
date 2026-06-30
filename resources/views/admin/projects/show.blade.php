@@ -82,9 +82,20 @@
                     @else
                         <div class="photos-grid" id="photo-grid" data-project-id="{{ $project->id }}">
                             @foreach($activeGallery->photos as $photo)
-                                <div class="photo-item" data-id="{{ $photo->id }}">
+                                <div class="photo-item {{ $project->hero_photo_id === $photo->id ? 'is-cover' : '' }}" data-id="{{ $photo->id }}">
                                     <img src="{{ $photo->thumbnail_url ?: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%231a1a1a%22/%3E%3C/svg%3E' }}" alt="Photo">
+                                    @if($project->hero_photo_id === $photo->id)
+                                        <span class="photo-cover-badge">Cover</span>
+                                    @endif
                                     <div class="photo-overlay">
+                                        @if($project->hero_photo_id !== $photo->id && $photo->is_processed)
+                                            <form action="{{ route('admin.projects.photos.hero', [$project->id, $photo->id]) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="photo-cover-btn">Set as cover</button>
+                                            </form>
+                                        @else
+                                            <span></span>
+                                        @endif
                                         <form action="{{ route('admin.projects.photos.destroy', [$project->id, $photo->id]) }}" method="POST" onsubmit="return confirm('Delete this photo?');">
                                             @csrf
                                             @method('DELETE')
