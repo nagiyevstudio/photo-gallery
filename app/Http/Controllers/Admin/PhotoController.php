@@ -20,7 +20,7 @@ class PhotoController extends Controller
     public function upload(Request $request, Project $project)
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:jpg,jpeg,png,gif,webp,bmp,tiff,tif,heic,heif,svg,avif', 'max:51200'], // max 50MB
+            'file' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:102400'], // max 100MB
             'gallery_name' => ['nullable', 'string', 'max:255'],
         ]);
 
