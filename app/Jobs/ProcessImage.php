@@ -10,9 +10,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ProcessImage implements ShouldQueue
 {
@@ -34,17 +34,18 @@ class ProcessImage implements ShouldQueue
     public function handle(ImageService $imageService): void
     {
         $photo = Photo::find($this->photoId);
-        if (!$photo) {
+        if (! $photo) {
             return;
         }
 
         $gallery = $photo->gallery;
         $project = $gallery->project;
 
-        $originalFullPath = storage_path('app/' . $photo->original_path);
+        $originalFullPath = storage_path('app/'.$photo->original_path);
 
-        if (!File::exists($originalFullPath)) {
-            Log::error("ProcessImage Job: Original file not found at " . $originalFullPath);
+        if (! File::exists($originalFullPath)) {
+            Log::error('ProcessImage Job: Original file not found at '.$originalFullPath);
+
             return;
         }
 
@@ -56,15 +57,15 @@ class ProcessImage implements ShouldQueue
         $webFullDir = storage_path("app/public/{$webRelDir}");
         $thumbFullDir = storage_path("app/public/{$thumbRelDir}");
 
-        if (!is_dir($webFullDir)) {
+        if (! is_dir($webFullDir)) {
             mkdir($webFullDir, 0755, true);
         }
-        if (!is_dir($thumbFullDir)) {
+        if (! is_dir($thumbFullDir)) {
             mkdir($thumbFullDir, 0755, true);
         }
 
-        $filenameWebp = File::name($photo->original_filename) . '.webp';
-        
+        $filenameWebp = File::name($photo->original_filename).'.webp';
+
         $webFullPath = "{$webFullDir}/{$filenameWebp}";
         $thumbFullPath = "{$thumbFullDir}/{$filenameWebp}";
 
@@ -97,8 +98,14 @@ class ProcessImage implements ShouldQueue
                 }
             }
 
-        } catch (\Exception $e) {
-            Log::error("ProcessImage Job failed for photo {$photo->id}: " . $e->getMessage());
+        } catch (\Throwable $e) {
+            foreach ([$webFullPath, $thumbFullPath] as $generatedPath) {
+                if (file_exists($generatedPath)) {
+                    unlink($generatedPath);
+                }
+            }
+
+            Log::error("ProcessImage Job failed for photo {$photo->id}: ".$e->getMessage());
             throw $e;
         }
     }

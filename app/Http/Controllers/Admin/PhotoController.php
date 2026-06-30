@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Project;
+use App\Jobs\ProcessImage;
 use App\Models\Gallery;
 use App\Models\Photo;
-use App\Jobs\ProcessImage;
+use App\Models\Project;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class PhotoController extends Controller
 {
@@ -24,9 +24,12 @@ class PhotoController extends Controller
             'gallery_name' => ['nullable', 'string', 'max:255'],
         ]);
 
+        $photo = null;
+        $originalPath = null;
+
         try {
             $file = $request->file('file');
-            
+
             // Resolve gallery — use firstOrCreate to prevent race condition
             // when multiple concurrent uploads try to create the same gallery
             $galleryName = $request->input('gallery_name') ?: 'Unsorted';
@@ -44,17 +47,17 @@ class PhotoController extends Controller
             // Generate unique filename
             $originalFilename = $file->getClientOriginalName();
             $fileSize = $file->getSize();
-            $safeFilename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $safeFilename = Str::uuid().'.'.$file->getClientOriginalExtension();
 
             // Save original file to storage/app/originals/{project_id}/{gallery_id}/
             // Use explicit path to avoid Laravel 11 'local' disk pointing to private/
             $originalRelDir = "originals/{$project->id}/{$gallery->id}";
-            $fullDir = storage_path('app/' . $originalRelDir);
-            if (!is_dir($fullDir)) {
+            $fullDir = storage_path('app/'.$originalRelDir);
+            if (! is_dir($fullDir)) {
                 mkdir($fullDir, 0755, true);
             }
             $file->move($fullDir, $safeFilename);
-            $originalPath = $originalRelDir . '/' . $safeFilename;
+            $originalPath = $originalRelDir.'/'.$safeFilename;
 
             $nextPhotoSortOrder = ($gallery->photos()->max('sort_order') ?? 0) + 1;
 
@@ -76,15 +79,26 @@ class PhotoController extends Controller
                 'photo_id' => $photo->id,
                 'filename' => $originalFilename,
             ]);
-        } catch (\Exception $e) {
-            \Log::error('Photo upload failed: ' . $e->getMessage(), [
+        } catch (\Throwable $e) {
+            if ($photo) {
+                $photo->delete();
+            }
+
+            if ($originalPath) {
+                $originalFullPath = storage_path('app/'.$originalPath);
+                if (file_exists($originalFullPath)) {
+                    unlink($originalFullPath);
+                }
+            }
+
+            \Log::error('Photo upload failed: '.$e->getMessage(), [
                 'project_id' => $project->id,
                 'file' => $request->file('file')?->getClientOriginalName(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Upload failed: ' . $e->getMessage(),
+                'message' => 'Upload failed: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -115,20 +129,20 @@ class PhotoController extends Controller
         $gallery = $photo->gallery;
 
         // Delete physical files using explicit paths
-        $originalFullPath = storage_path('app/' . $photo->original_path);
+        $originalFullPath = storage_path('app/'.$photo->original_path);
         if (file_exists($originalFullPath)) {
             unlink($originalFullPath);
         }
 
         if ($photo->web_path) {
-            $webFullPath = storage_path('app/public/' . $photo->web_path);
+            $webFullPath = storage_path('app/public/'.$photo->web_path);
             if (file_exists($webFullPath)) {
                 unlink($webFullPath);
             }
         }
 
         if ($photo->thumbnail_path) {
-            $thumbFullPath = storage_path('app/public/' . $photo->thumbnail_path);
+            $thumbFullPath = storage_path('app/public/'.$photo->thumbnail_path);
             if (file_exists($thumbFullPath)) {
                 unlink($thumbFullPath);
             }
@@ -137,7 +151,7 @@ class PhotoController extends Controller
         // If the deleted photo was the hero image, reset project's hero photo
         if ($project->hero_photo_id === $photo->id) {
             $project->update(['hero_photo_id' => null]);
-            
+
             // Auto assign another photo as hero if available
             $firstGallery = $project->galleries()->orderBy('sort_order')->first();
             if ($firstGallery) {

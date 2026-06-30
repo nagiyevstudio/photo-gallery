@@ -2,10 +2,11 @@
 
 namespace App\Services;
 
-use Intervention\Image\ImageManager;
+use Illuminate\Support\Facades\Log;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
-use Illuminate\Support\Facades\Log;
+use Intervention\Image\Format;
+use Intervention\Image\ImageManager;
 
 class ImageService
 {
@@ -15,9 +16,9 @@ class ImageService
     {
         // Select driver based on server capabilities (prefer Imagick, fallback to GD)
         if (extension_loaded('imagick')) {
-            $this->manager = new ImageManager(new ImagickDriver());
+            $this->manager = new ImageManager(new ImagickDriver);
         } else {
-            $this->manager = new ImageManager(new GdDriver());
+            $this->manager = new ImageManager(new GdDriver);
         }
     }
 
@@ -27,7 +28,7 @@ class ImageService
     public function createWebVersion(string $sourcePath, string $targetPath, int $maxSide = 2000, int $quality = 85): array
     {
         try {
-            $image = $this->manager->read($sourcePath);
+            $image = $this->manager->decodePath($sourcePath);
             $width = $image->width();
             $height = $image->height();
 
@@ -43,7 +44,7 @@ class ImageService
             }
 
             // Save as WebP
-            $encoded = $image->toWebp($quality);
+            $encoded = $image->encodeUsingFormat(Format::WEBP, quality: $quality);
             $encoded->save($targetPath);
 
             return [
@@ -51,8 +52,8 @@ class ImageService
                 'height' => $image->height(),
                 'size' => filesize($targetPath),
             ];
-        } catch (\Exception $e) {
-            Log::error('ImageService createWebVersion failed: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error('ImageService createWebVersion failed: '.$e->getMessage());
             throw $e;
         }
     }
@@ -63,16 +64,16 @@ class ImageService
     public function createThumbnail(string $sourcePath, string $targetPath, int $height = 400, int $quality = 80): void
     {
         try {
-            $image = $this->manager->read($sourcePath);
-            
+            $image = $this->manager->decodePath($sourcePath);
+
             // Resize height to target, maintaining aspect ratio
             $image->scale(height: $height);
 
             // Save as WebP
-            $encoded = $image->toWebp($quality);
+            $encoded = $image->encodeUsingFormat(Format::WEBP, quality: $quality);
             $encoded->save($targetPath);
-        } catch (\Exception $e) {
-            Log::error('ImageService createThumbnail failed: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error('ImageService createThumbnail failed: '.$e->getMessage());
             throw $e;
         }
     }
@@ -83,13 +84,15 @@ class ImageService
     public function getDimensions(string $path): array
     {
         try {
-            $image = $this->manager->read($path);
+            $image = $this->manager->decodePath($path);
+
             return [
                 'width' => $image->width(),
                 'height' => $image->height(),
             ];
-        } catch (\Exception $e) {
-            Log::error('ImageService getDimensions failed: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error('ImageService getDimensions failed: '.$e->getMessage());
+
             return ['width' => 0, 'height' => 0];
         }
     }
