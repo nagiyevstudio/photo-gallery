@@ -135,17 +135,11 @@ class PhotoController extends Controller
         }
 
         if ($photo->web_path) {
-            $webFullPath = storage_path('app/public/'.$photo->web_path);
-            if (file_exists($webFullPath)) {
-                unlink($webFullPath);
-            }
+            Storage::disk('public')->delete($photo->web_path);
         }
 
         if ($photo->thumbnail_path) {
-            $thumbFullPath = storage_path('app/public/'.$photo->thumbnail_path);
-            if (file_exists($thumbFullPath)) {
-                unlink($thumbFullPath);
-            }
+            Storage::disk('public')->delete($photo->thumbnail_path);
         }
 
         // If the deleted photo was the hero image, reset project's hero photo

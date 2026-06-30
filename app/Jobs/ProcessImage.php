@@ -49,25 +49,18 @@ class ProcessImage implements ShouldQueue
             return;
         }
 
-        // Directories inside storage/app/public/ (accessible via /storage symlink)
+        // Directories inside the public disk (served directly as /storage/*).
         $webRelDir = "web/{$project->id}/{$gallery->id}";
         $thumbRelDir = "thumbnails/{$project->id}/{$gallery->id}";
 
-        // Create directories using absolute paths to avoid Laravel 11 'local' disk mismatch
-        $webFullDir = storage_path("app/public/{$webRelDir}");
-        $thumbFullDir = storage_path("app/public/{$thumbRelDir}");
-
-        if (! is_dir($webFullDir)) {
-            mkdir($webFullDir, 0755, true);
-        }
-        if (! is_dir($thumbFullDir)) {
-            mkdir($thumbFullDir, 0755, true);
-        }
+        $publicDisk = Storage::disk('public');
+        $publicDisk->makeDirectory($webRelDir);
+        $publicDisk->makeDirectory($thumbRelDir);
 
         $filenameWebp = File::name($photo->original_filename).'.webp';
 
-        $webFullPath = "{$webFullDir}/{$filenameWebp}";
-        $thumbFullPath = "{$thumbFullDir}/{$filenameWebp}";
+        $webFullPath = $publicDisk->path("{$webRelDir}/{$filenameWebp}");
+        $thumbFullPath = $publicDisk->path("{$thumbRelDir}/{$filenameWebp}");
 
         try {
             // 1. Create Web Version
