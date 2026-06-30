@@ -155,9 +155,15 @@ document.addEventListener('DOMContentLoaded', () => {
         function uploadFiles(files) {
             if (files.length === 0) return;
             
-            // Make progress container visible
-            document.querySelector('.upload-progress-container').style.display = 'block';
+            const MAX_CONCURRENT = 2; // Upload max 2 files at a time
+            const MAX_RETRIES = 2;    // Retry failed uploads up to 2 times
 
+            // Make progress container visible
+            const progressContainer = document.querySelector('.upload-progress-container');
+            progressContainer.style.display = 'block';
+
+            // Build the upload queue
+            const queue = [];
             Array.from(files).forEach((file, index) => {
                 // Determine gallery name from webkitRelativePath
                 let galleryName = 'Unsorted';
@@ -173,8 +179,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const fileHtml = `
                     <div class="upload-file-progress" id="${progressId}">
                         <div class="upload-file-info">
-                            <span>${file.name} (${galleryName})</span>
-                            <span class="progress-percent">0%</span>
+                            <span>${file.name} <small style="opacity:0.6">(${galleryName})</small></span>
+                            <span class="progress-percent">Queued</span>
                         </div>
                         <div class="progress-bar-bg">
                             <div class="progress-bar-fill" style="width: 0%"></div>
@@ -183,14 +189,76 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 progressList.insertAdjacentHTML('beforeend', fileHtml);
 
-                const progressEl = document.getElementById(progressId);
+                queue.push({ file, galleryName, progressId, retries: 0 });
+            });
+
+            // Overall progress counter
+            const totalFiles = queue.length;
+            let completedFiles = 0;
+            let failedFiles = 0;
+
+            // Add overall progress header
+            const overallId = `overall-progress-${Date.now()}`;
+            progressList.insertAdjacentHTML('afterbegin', `
+                <div class="upload-file-progress" id="${overallId}" style="border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 10px;">
+                    <div class="upload-file-info">
+                        <span><strong>Overall Progress</strong></span>
+                        <span class="progress-percent" style="font-weight: 600;">0 / ${totalFiles}</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" style="width: 0%; transition: width 0.3s ease;"></div>
+                    </div>
+                </div>
+            `);
+
+            const overallEl = document.getElementById(overallId);
+            const overallPercent = overallEl.querySelector('.progress-percent');
+            const overallBar = overallEl.querySelector('.progress-bar-fill');
+
+            function updateOverall() {
+                const done = completedFiles + failedFiles;
+                const pct = Math.round((done / totalFiles) * 100);
+                overallPercent.textContent = `${completedFiles} / ${totalFiles}` + (failedFiles > 0 ? ` (${failedFiles} failed)` : '');
+                overallBar.style.width = `${pct}%`;
+
+                if (done === totalFiles) {
+                    if (failedFiles === 0) {
+                        overallPercent.textContent = `All ${totalFiles} files uploaded ✓`;
+                        overallPercent.style.color = 'var(--success)';
+                        overallBar.style.backgroundColor = 'var(--success)';
+                    } else {
+                        overallPercent.textContent = `Done: ${completedFiles} succeeded, ${failedFiles} failed`;
+                        overallPercent.style.color = 'var(--warning, #f0ad4e)';
+                        overallBar.style.backgroundColor = 'var(--warning, #f0ad4e)';
+                    }
+                }
+            }
+
+            // Sequential upload engine with concurrency limit
+            let currentIndex = 0;
+            let activeUploads = 0;
+
+            function uploadNext() {
+                while (activeUploads < MAX_CONCURRENT && currentIndex < queue.length) {
+                    const item = queue[currentIndex];
+                    currentIndex++;
+                    activeUploads++;
+                    uploadSingleFile(item);
+                }
+            }
+
+            function uploadSingleFile(item) {
+                const progressEl = document.getElementById(item.progressId);
                 const percentText = progressEl.querySelector('.progress-percent');
                 const barFill = progressEl.querySelector('.progress-bar-fill');
 
-                // Perform AJAX upload
+                percentText.textContent = 'Uploading...';
+                barFill.style.width = '0%';
+                barFill.style.backgroundColor = ''; // Reset color for retries
+
                 const formData = new FormData();
-                formData.append('file', file);
-                formData.append('gallery_name', galleryName);
+                formData.append('file', item.file);
+                formData.append('gallery_name', item.galleryName);
 
                 const xhr = new XMLHttpRequest();
                 xhr.open('POST', `/admin/projects/${projectId}/upload`, true);
@@ -205,25 +273,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
 
                 xhr.onload = () => {
+                    activeUploads--;
                     if (xhr.status === 200) {
-                        percentText.textContent = 'Completed';
+                        completedFiles++;
+                        percentText.textContent = '✓ Done';
                         percentText.style.color = 'var(--success)';
+                        barFill.style.width = '100%';
                         barFill.style.backgroundColor = 'var(--success)';
                     } else {
-                        percentText.textContent = 'Failed';
+                        // Retry logic
+                        if (item.retries < MAX_RETRIES) {
+                            item.retries++;
+                            percentText.textContent = `Retry ${item.retries}/${MAX_RETRIES}...`;
+                            percentText.style.color = 'var(--warning, #f0ad4e)';
+                            barFill.style.width = '0%';
+                            activeUploads++;
+                            setTimeout(() => uploadSingleFile(item), 1000); // Wait 1s before retry
+                            return;
+                        }
+                        failedFiles++;
+                        percentText.textContent = `✗ Failed (${xhr.status})`;
                         percentText.style.color = 'var(--danger)';
                         barFill.style.backgroundColor = 'var(--danger)';
                     }
+                    updateOverall();
+                    uploadNext(); // Start next file in queue
                 };
 
                 xhr.onerror = () => {
-                    percentText.textContent = 'Error';
+                    activeUploads--;
+                    // Retry logic
+                    if (item.retries < MAX_RETRIES) {
+                        item.retries++;
+                        percentText.textContent = `Retry ${item.retries}/${MAX_RETRIES}...`;
+                        percentText.style.color = 'var(--warning, #f0ad4e)';
+                        barFill.style.width = '0%';
+                        activeUploads++;
+                        setTimeout(() => uploadSingleFile(item), 1000);
+                        return;
+                    }
+                    failedFiles++;
+                    percentText.textContent = '✗ Network error';
                     percentText.style.color = 'var(--danger)';
                     barFill.style.backgroundColor = 'var(--danger)';
+                    updateOverall();
+                    uploadNext();
                 };
 
                 xhr.send(formData);
-            });
+            }
+
+            // Kick off the queue
+            uploadNext();
         }
     }
 });
