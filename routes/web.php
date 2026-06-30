@@ -9,54 +9,6 @@ use App\Http\Controllers\Admin\PhotoController;
 use App\Http\Middleware\AdminAuth;
 
 // --- Admin Authentication Routes ---
-Route::get('/debug-storage-status', function () {
-    $logPath = storage_path('logs/laravel.log');
-    
-    $tailCustom = function ($filepath, $lines = 100) {
-        if (!file_exists($filepath)) return '';
-        $f = fopen($filepath, 'rb');
-        if ($f === false) return 'Cannot open file';
-        
-        $buffer = 4096;
-        fseek($f, 0, SEEK_END);
-        $pos = ftell($f);
-        $data = '';
-        
-        while ($pos > 0 && substr_count($data, "\n") <= $lines) {
-            $read = min($pos, $buffer);
-            $pos -= $read;
-            fseek($f, $pos);
-            $data = fread($f, $read) . $data;
-        }
-        fclose($f);
-        return $data;
-    };
-
-    $logs = file_exists($logPath) ? $tailCustom($logPath, 150) : 'No log file found.';
-    
-    $testDirs = [
-        storage_path('app'),
-        storage_path('app/originals'),
-        storage_path('app/public'),
-        storage_path('app/public/web'),
-        storage_path('app/public/thumbnails'),
-    ];
-    
-    $status = [];
-    foreach ($testDirs as $dir) {
-        $status[$dir] = [
-            'exists' => is_dir($dir),
-            'writable' => is_writable($dir),
-            'perms' => is_dir($dir) ? substr(sprintf('%o', fileperms($dir)), -4) : null,
-        ];
-    }
-    
-    return response()->json([
-        'directories' => $status,
-        'logs' => explode("\n", $logs)
-    ]);
-});
-
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('login', [AuthController::class, 'login']);

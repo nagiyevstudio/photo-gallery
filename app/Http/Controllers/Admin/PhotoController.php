@@ -43,6 +43,7 @@ class PhotoController extends Controller
 
             // Generate unique filename
             $originalFilename = $file->getClientOriginalName();
+            $fileSize = $file->getSize();
             $safeFilename = Str::uuid() . '.' . $file->getClientOriginalExtension();
 
             // Save original file to storage/app/originals/{project_id}/{gallery_id}/
@@ -62,7 +63,7 @@ class PhotoController extends Controller
                 'gallery_id' => $gallery->id,
                 'original_filename' => $originalFilename,
                 'original_path' => $originalPath,
-                'file_size' => $file->getSize(),
+                'file_size' => $fileSize,
                 'sort_order' => $nextPhotoSortOrder,
                 'is_processed' => false,
             ]);
