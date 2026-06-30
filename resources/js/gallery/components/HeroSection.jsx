@@ -15,7 +15,10 @@ export default function HeroSection({ imageUrl, title }) {
                 style={{ backgroundImage: `url(${imageUrl})` }}
             ></div>
             <div className="hero-overlay">
-                <h1 className="hero-title">{title}</h1>
+                <div className="hero-copy">
+                    <h1 className="hero-title">{title}</h1>
+                    <p className="hero-byline">photo.nagiyev.com <span aria-hidden="true">|</span> Photographer Faik Nagiyev</p>
+                </div>
                 <div className="scroll-indicator" onClick={handleScrollDown}></div>
             </div>
         </section>

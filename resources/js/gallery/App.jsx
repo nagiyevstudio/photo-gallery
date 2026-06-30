@@ -65,6 +65,12 @@ export default function App() {
         }
     }, [projectSlug]);
 
+    useEffect(() => {
+        if (!project?.title) return;
+
+        document.title = `${project.title} | Faik Nagiyev Photography`;
+    }, [project?.title]);
+
     // Fetch photos when active gallery changes
     useEffect(() => {
         if (!projectSlug || !activeGallerySlug) return;

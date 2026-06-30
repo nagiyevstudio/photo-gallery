@@ -92,23 +92,44 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    align-items: center;
-    padding: 60px 24px;
-    text-align: center;
+    align-items: flex-start;
+    padding: clamp(40px, 7vw, 96px);
+    text-align: left;
+}
+
+.hero-copy {
+    max-width: min(900px, 88vw);
 }
 
 .hero-title {
     font-family: var(--font-display);
-    font-size: clamp(36px, 6vw, 64px);
+    font-size: clamp(40px, 7vw, 88px);
     font-weight: 500;
     color: #ffffff;
-    letter-spacing: -1px;
-    line-height: 1.1;
-    margin-bottom: 24px;
+    letter-spacing: -0.035em;
+    line-height: 1.02;
+    margin-bottom: 14px;
     text-shadow: 0 4px 12px rgba(0,0,0,0.5);
     opacity: 0;
     transform: translateY(20px);
     animation: fadeInUp 1s var(--transition-slow) 300ms forwards;
+}
+
+.hero-byline {
+    color: rgba(255, 255, 255, 0.76);
+    font-size: clamp(11px, 1.2vw, 14px);
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.65);
+    opacity: 0;
+    transform: translateY(14px);
+    animation: fadeInUp 1s var(--transition-slow) 500ms forwards;
+}
+
+.hero-byline span {
+    display: inline-block;
+    margin: 0 0.55em;
+    color: var(--accent);
 }
 
 .scroll-indicator {
@@ -120,6 +141,9 @@ body {
     opacity: 0;
     animation: fadeInUp 1s var(--transition-slow) 600ms forwards, bounce 2s infinite 2s;
     cursor: pointer;
+    position: absolute;
+    right: clamp(24px, 5vw, 72px);
+    bottom: clamp(40px, 7vw, 96px);
 }
 
 .scroll-indicator::before {
@@ -445,6 +469,23 @@ body {
 
 /* Responsive adjustment */
 @media (max-width: 768px) {
+    .hero-overlay {
+        padding: 40px 24px;
+    }
+
+    .hero-copy {
+        max-width: 100%;
+    }
+
+    .hero-byline {
+        max-width: 280px;
+        line-height: 1.6;
+    }
+
+    .scroll-indicator {
+        display: none;
+    }
+
     .tabs-bar {
         padding: 0 20px;
         height: 64px;
