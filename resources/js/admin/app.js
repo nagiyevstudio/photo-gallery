@@ -155,7 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
         function uploadFiles(files) {
             if (files.length === 0) return;
             
-            const MAX_CONCURRENT = 2; // Upload max 2 files at a time
             const MAX_RETRIES = 2;    // Retry failed uploads up to 2 times
 
             // Make progress container visible
@@ -234,17 +233,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Sequential upload engine with concurrency limit
+            // Strictly sequential upload — one file at a time
             let currentIndex = 0;
-            let activeUploads = 0;
 
             function uploadNext() {
-                while (activeUploads < MAX_CONCURRENT && currentIndex < queue.length) {
-                    const item = queue[currentIndex];
-                    currentIndex++;
-                    activeUploads++;
-                    uploadSingleFile(item);
-                }
+                if (currentIndex >= queue.length) return;
+                const item = queue[currentIndex];
+                currentIndex++;
+                uploadSingleFile(item);
             }
 
             function uploadSingleFile(item) {
@@ -253,8 +249,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const barFill = progressEl.querySelector('.progress-bar-fill');
 
                 percentText.textContent = 'Uploading...';
+                percentText.style.color = '';
                 barFill.style.width = '0%';
-                barFill.style.backgroundColor = ''; // Reset color for retries
+                barFill.style.backgroundColor = '';
 
                 const formData = new FormData();
                 formData.append('file', item.file);
@@ -273,43 +270,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
 
                 xhr.onload = () => {
-                    activeUploads--;
                     if (xhr.status === 200) {
                         completedFiles++;
                         percentText.textContent = '✓ Done';
                         percentText.style.color = 'var(--success)';
                         barFill.style.width = '100%';
                         barFill.style.backgroundColor = 'var(--success)';
+                        updateOverall();
+                        uploadNext();
                     } else {
-                        // Retry logic
+                        // Retry — next file does NOT start until retry finishes
                         if (item.retries < MAX_RETRIES) {
                             item.retries++;
                             percentText.textContent = `Retry ${item.retries}/${MAX_RETRIES}...`;
                             percentText.style.color = 'var(--warning, #f0ad4e)';
                             barFill.style.width = '0%';
-                            activeUploads++;
-                            setTimeout(() => uploadSingleFile(item), 1000); // Wait 1s before retry
+                            setTimeout(() => uploadSingleFile(item), 2000);
                             return;
                         }
                         failedFiles++;
                         percentText.textContent = `✗ Failed (${xhr.status})`;
                         percentText.style.color = 'var(--danger)';
                         barFill.style.backgroundColor = 'var(--danger)';
+                        updateOverall();
+                        uploadNext();
                     }
-                    updateOverall();
-                    uploadNext(); // Start next file in queue
                 };
 
                 xhr.onerror = () => {
-                    activeUploads--;
-                    // Retry logic
                     if (item.retries < MAX_RETRIES) {
                         item.retries++;
                         percentText.textContent = `Retry ${item.retries}/${MAX_RETRIES}...`;
                         percentText.style.color = 'var(--warning, #f0ad4e)';
                         barFill.style.width = '0%';
-                        activeUploads++;
-                        setTimeout(() => uploadSingleFile(item), 1000);
+                        setTimeout(() => uploadSingleFile(item), 2000);
                         return;
                     }
                     failedFiles++;
@@ -323,7 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 xhr.send(formData);
             }
 
-            // Kick off the queue
+            // Start with the first file
             uploadNext();
         }
     }

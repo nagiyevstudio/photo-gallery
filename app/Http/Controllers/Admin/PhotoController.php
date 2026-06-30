@@ -20,57 +20,67 @@ class PhotoController extends Controller
     public function upload(Request $request, Project $project)
     {
         $request->validate([
-            'file' => ['required', 'image', 'max:25600'], // max 25MB
+            'file' => ['required', 'file', 'mimes:jpg,jpeg,png,gif,webp,bmp,tiff,tif,heic,heif,svg,avif', 'max:51200'], // max 50MB
             'gallery_name' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $file = $request->file('file');
-        
-        // Resolve gallery
-        $galleryName = $request->input('gallery_name') ?: 'Unsorted';
-        $galleryName = trim($galleryName);
+        try {
+            $file = $request->file('file');
+            
+            // Resolve gallery — use firstOrCreate to prevent race condition
+            // when multiple concurrent uploads try to create the same gallery
+            $galleryName = $request->input('gallery_name') ?: 'Unsorted';
+            $galleryName = trim($galleryName);
+            $gallerySlug = Str::slug($galleryName);
 
-        $gallerySlug = Str::slug($galleryName);
-        $gallery = $project->galleries()->where('slug', $gallerySlug)->first();
+            $gallery = $project->galleries()->firstOrCreate(
+                ['slug' => $gallerySlug],
+                [
+                    'title' => $galleryName,
+                    'sort_order' => ($project->galleries()->max('sort_order') ?? 0) + 1,
+                ]
+            );
 
-        if (!$gallery) {
-            $nextSortOrder = $project->galleries()->max('sort_order') + 1;
-            $gallery = $project->galleries()->create([
-                'title' => $galleryName,
-                'slug' => $gallerySlug,
-                'sort_order' => $nextSortOrder,
+            // Generate unique filename
+            $originalFilename = $file->getClientOriginalName();
+            $safeFilename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+
+            // Save original file to storage/app/originals/{project_id}/{gallery_id}/
+            $originalRelDir = "originals/{$project->id}/{$gallery->id}";
+            Storage::makeDirectory($originalRelDir);
+            $originalPath = $file->storeAs($originalRelDir, $safeFilename);
+
+            $nextPhotoSortOrder = ($gallery->photos()->max('sort_order') ?? 0) + 1;
+
+            // Create Photo record
+            $photo = Photo::create([
+                'gallery_id' => $gallery->id,
+                'original_filename' => $originalFilename,
+                'original_path' => $originalPath,
+                'file_size' => $file->getSize(),
+                'sort_order' => $nextPhotoSortOrder,
+                'is_processed' => false,
             ]);
+
+            // Dispatch background processing job
+            ProcessImage::dispatch($photo->id);
+
+            return response()->json([
+                'success' => true,
+                'photo_id' => $photo->id,
+                'filename' => $originalFilename,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Photo upload failed: ' . $e->getMessage(), [
+                'project_id' => $project->id,
+                'file' => $request->file('file')?->getClientOriginalName(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Upload failed: ' . $e->getMessage(),
+            ], 500);
         }
-
-        // Generate unique filename
-        $originalFilename = $file->getClientOriginalName();
-        $safeFilename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-
-        // Save original file to storage/app/originals/{project_id}/{gallery_id}/
-        $originalRelDir = "originals/{$project->id}/{$gallery->id}";
-        Storage::makeDirectory($originalRelDir);
-        $originalPath = $file->storeAs($originalRelDir, $safeFilename);
-
-        $nextPhotoSortOrder = $gallery->photos()->max('sort_order') + 1;
-
-        // Create Photo record
-        $photo = Photo::create([
-            'gallery_id' => $gallery->id,
-            'original_filename' => $originalFilename,
-            'original_path' => $originalPath,
-            'file_size' => $file->getSize(),
-            'sort_order' => $nextPhotoSortOrder,
-            'is_processed' => false,
-        ]);
-
-        // Dispatch background processing job
-        ProcessImage::dispatch($photo->id);
-
-        return response()->json([
-            'success' => true,
-            'photo_id' => $photo->id,
-            'filename' => $originalFilename,
-        ]);
     }
 
     /**
