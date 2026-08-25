@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { client } from './api/client';
 import HeroSection from './components/HeroSection';
 import GalleryTabs from './components/GalleryTabs';
-import GalleryStickyMenu from './components/GalleryStickyMenu';
 import JustifiedGrid from './components/JustifiedGrid';
 import Lightbox from './components/Lightbox';
 import PasswordGate from './components/PasswordGate';
@@ -148,10 +147,13 @@ export default function App() {
 
     return (
         <div style={{ backgroundColor: 'var(--bg-primary)', minHeight: '100vh' }}>
-            {/* 1. Hero Section */}
+            {/* 1. Hero Section with Title, CTA Actions (Download & Expiry), and Byline */}
             <HeroSection 
                 imageUrl={project.hero_image_url || 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%23121212%22/%3E%3C/svg%3E'} 
                 title={project.title} 
+                expiresAt={project.expires_at || project.expires_at_formatted}
+                allowDownload={project.allow_download}
+                projectSlug={project.slug}
             />
 
             {/* 2. Sticky Gallery Tabs Navigation */}
@@ -159,13 +161,6 @@ export default function App() {
                 galleries={project.galleries}
                 activeSlug={activeGallerySlug}
                 onTabChange={setActiveGallerySlug}
-            />
-
-            {/* 3. Floating Sticker Menu for Expiration & Actions */}
-            <GalleryStickyMenu 
-                expiresAt={project.expires_at || project.expires_at_formatted}
-                allowDownload={project.allow_download}
-                projectSlug={project.slug}
             />
 
             {/* 3. Photo Grid Layout */}

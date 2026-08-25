@@ -231,42 +231,34 @@ body {
     background-color: var(--accent);
 }
 
-/* Sticky Action Sticker Menu */
-.gallery-sticky-menu {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 99;
-    display: inline-flex;
+/* Hero Actions CTA */
+.hero-actions {
+    display: flex;
     align-items: center;
-    gap: 12px;
-    background: rgba(14, 14, 14, 0.88);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
-    padding: 6px 8px 6px 12px;
-    border-radius: 40px;
-    max-width: calc(100vw - 32px);
-    pointer-events: auto;
-    animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    gap: 16px;
+    margin: 20px 0 16px 0;
+    opacity: 0;
+    transform: translateY(14px);
+    animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) 400ms forwards;
+    flex-wrap: wrap;
 }
 
 /* Expiration Badge */
 .expiration-badge {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
     letter-spacing: 0.5px;
     color: var(--text-secondary);
     border: 1px solid var(--border);
-    padding: 6px 12px;
-    border-radius: 20px;
-    background-color: rgba(255, 255, 255, 0.04);
+    padding: 8px 14px;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     white-space: nowrap;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
 }
 
 .expiration-badge .expiration-label {
@@ -278,21 +270,9 @@ body {
     font-variant-numeric: tabular-nums;
 }
 
-.gallery-sticky-menu .btn-gold {
-    border-radius: 20px;
-    padding: 8px 16px;
-    white-space: nowrap;
-}
-
-.gallery-sticky-menu .btn-outline {
-    border-radius: 20px;
-    padding: 8px 16px;
-    white-space: nowrap;
-}
-
 /* Justified Photos Grid */
 .grid-container {
-    padding: 40px 40px 96px 40px;
+    padding: 40px;
     position: relative;
     min-height: 400px;
 }
@@ -522,6 +502,21 @@ body {
         max-width: 100%;
     }
 
+    .hero-actions {
+        margin: 16px 0 14px 0;
+        gap: 10px;
+    }
+
+    .hero-actions .btn-gold {
+        padding: 8px 14px;
+        font-size: 11px;
+    }
+
+    .expiration-badge {
+        font-size: 11px;
+        padding: 7px 10px;
+    }
+
     .hero-byline {
         max-width: 280px;
         line-height: 1.6;
@@ -547,32 +542,8 @@ body {
         font-size: 12px;
         letter-spacing: 1px;
     }
-
-    .gallery-sticky-menu {
-        bottom: max(16px, env(safe-area-inset-bottom, 16px));
-        padding: 5px 6px 5px 10px;
-        gap: 8px;
-        border-radius: 30px;
-        max-width: calc(100vw - 24px);
-    }
-
-    .gallery-sticky-menu .btn-gold {
-        padding: 7px 12px;
-        font-size: 11px;
-        letter-spacing: 0.5px;
-    }
-
-    .gallery-sticky-menu .btn-outline {
-        padding: 7px 12px;
-        font-size: 11px;
-    }
-
-    .expiration-badge {
-        font-size: 10.5px;
-        padding: 5px 8px;
-    }
     
     .grid-container {
-        padding: 12px 12px 84px 12px;
+        padding: 12px;
     }
 }
