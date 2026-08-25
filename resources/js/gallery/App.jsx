@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { client } from './api/client';
 import HeroSection from './components/HeroSection';
 import GalleryTabs from './components/GalleryTabs';
+import GalleryStickyMenu from './components/GalleryStickyMenu';
 import JustifiedGrid from './components/JustifiedGrid';
 import Lightbox from './components/Lightbox';
 import PasswordGate from './components/PasswordGate';
@@ -158,7 +159,11 @@ export default function App() {
                 galleries={project.galleries}
                 activeSlug={activeGallerySlug}
                 onTabChange={setActiveGallerySlug}
-                expiresAt={project.expires_at_formatted}
+            />
+
+            {/* 3. Floating Sticker Menu for Expiration & Actions */}
+            <GalleryStickyMenu 
+                expiresAt={project.expires_at || project.expires_at_formatted}
                 allowDownload={project.allow_download}
                 projectSlug={project.slug}
             />

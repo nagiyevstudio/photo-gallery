@@ -32,7 +32,7 @@ class ProjectController extends Controller
                 'hero_image_url' => $project->hero_image_url,
                 'allow_download' => $project->allow_download,
                 'expires_at' => $project->expires_at->toIso8601String(),
-                'expires_at_formatted' => $project->expires_at->format('F d, Y'),
+                'expires_at_formatted' => $project->expires_at->format('d.m.Y'),
                 'galleries' => $galleriesData,
             ]
         ]);

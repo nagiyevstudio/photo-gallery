@@ -180,14 +180,14 @@ body {
     top: 0;
     z-index: 100;
     background-color: var(--bg-glass);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border);
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    padding: 0 40px;
-    height: 72px;
+    padding: 0 32px;
+    height: 64px;
 }
 
 .tabs-list {
@@ -197,6 +197,7 @@ body {
     align-items: center;
     overflow-x: auto;
     scrollbar-width: none; /* Firefox */
+    -webkit-overflow-scrolling: touch;
 }
 
 .tabs-list::-webkit-scrollbar {
@@ -211,7 +212,8 @@ body {
     color: var(--text-secondary);
     cursor: pointer;
     position: relative;
-    padding: 24px 0;
+    padding: 20px 4px;
+    white-space: nowrap;
     transition: color var(--transition-fast);
 }
 
@@ -229,25 +231,68 @@ body {
     background-color: var(--accent);
 }
 
-.tabs-actions {
-    display: flex;
+/* Sticky Action Sticker Menu */
+.gallery-sticky-menu {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 99;
+    display: inline-flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
+    background: rgba(14, 14, 14, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
+    padding: 6px 8px 6px 12px;
+    border-radius: 40px;
+    max-width: calc(100vw - 32px);
+    pointer-events: auto;
+    animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Expiration Badge */
 .expiration-badge {
-    font-size: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
     color: var(--text-secondary);
     border: 1px solid var(--border);
     padding: 6px 12px;
     border-radius: 20px;
-    background-color: var(--bg-secondary);
+    background-color: rgba(255, 255, 255, 0.04);
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.expiration-badge .expiration-label {
+    color: var(--text-muted);
+}
+
+.expiration-badge .expiration-date {
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.gallery-sticky-menu .btn-gold {
+    border-radius: 20px;
+    padding: 8px 16px;
+    white-space: nowrap;
+}
+
+.gallery-sticky-menu .btn-outline {
+    border-radius: 20px;
+    padding: 8px 16px;
+    white-space: nowrap;
 }
 
 /* Justified Photos Grid */
 .grid-container {
-    padding: 40px;
+    padding: 40px 40px 96px 40px;
     position: relative;
     min-height: 400px;
 }
@@ -487,16 +532,47 @@ body {
     }
 
     .tabs-bar {
-        padding: 0 20px;
-        height: 64px;
+        padding: 0 16px;
+        height: 52px;
+        justify-content: flex-start;
+    }
+
+    .tabs-list {
+        gap: 20px;
+        padding: 0 4px;
     }
     
     .tab-item {
-        padding: 20px 0;
+        padding: 16px 2px;
         font-size: 12px;
+        letter-spacing: 1px;
+    }
+
+    .gallery-sticky-menu {
+        bottom: max(16px, env(safe-area-inset-bottom, 16px));
+        padding: 5px 6px 5px 10px;
+        gap: 8px;
+        border-radius: 30px;
+        max-width: calc(100vw - 24px);
+    }
+
+    .gallery-sticky-menu .btn-gold {
+        padding: 7px 12px;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+    }
+
+    .gallery-sticky-menu .btn-outline {
+        padding: 7px 12px;
+        font-size: 11px;
+    }
+
+    .expiration-badge {
+        font-size: 10.5px;
+        padding: 5px 8px;
     }
     
     .grid-container {
-        padding: 12px;
+        padding: 12px 12px 84px 12px;
     }
 }
