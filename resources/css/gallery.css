@@ -47,10 +47,6 @@
         --border: rgba(0, 0, 0, 0.08);
     }
 
-    .expiration-badge {
-        background-color: rgba(0, 0, 0, 0.04);
-    }
-
     .password-input {
         background-color: rgba(0, 0, 0, 0.03);
         color: var(--text-primary);
@@ -281,16 +277,17 @@ body {
     flex-wrap: wrap;
 }
 
-/* Expiration Badge */
+/* Expiration Badge — always lives on the dark hero, so its colors are fixed
+   and do not follow the page theme */
 .expiration-badge {
     font-size: 12px;
     font-weight: 500;
     letter-spacing: 0.5px;
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
+    color: #a0a0a0;
+    border: 1px solid rgba(255, 255, 255, 0.12);
     padding: 8px 14px;
     border-radius: 4px;
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(10, 10, 10, 0.45);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     white-space: nowrap;
@@ -300,11 +297,11 @@ body {
 }
 
 .expiration-badge .expiration-label {
-    color: var(--text-muted);
+    color: #8f8f8f;
 }
 
 .expiration-badge .expiration-date {
-    color: var(--text-primary);
+    color: #f5f5f5;
     font-variant-numeric: tabular-nums;
 }
 
