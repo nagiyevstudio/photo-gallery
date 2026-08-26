@@ -3,34 +3,55 @@ import justifiedLayout from 'justified-layout';
 
 export default function JustifiedGrid({ photos, onPhotoClick }) {
     const containerRef = useRef(null);
-    const [containerWidth, setContainerWidth] = useState(1200);
+    const [containerWidth, setContainerWidth] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return window.innerWidth > 768 ? window.innerWidth - 80 : window.innerWidth - 24;
+        }
+        return 1200;
+    });
     const [layout, setLayout] = useState({ containerHeight: 0, boxes: [] });
 
-    // Update container width on resize
+    // Measure inner content width of container (excluding padding)
     useEffect(() => {
         if (!containerRef.current) return;
 
         const updateWidth = () => {
-            const width = containerRef.current.offsetWidth;
-            setContainerWidth(width > 0 ? width : 1200);
+            if (!containerRef.current) return;
+            const width = containerRef.current.clientWidth;
+            if (width > 0) {
+                setContainerWidth(width);
+            }
         };
 
         updateWidth();
+
+        // Use ResizeObserver for accurate and reactive dimension tracking
+        let resizeObserver = null;
+        if (typeof ResizeObserver !== 'undefined') {
+            resizeObserver = new ResizeObserver((entries) => {
+                for (const entry of entries) {
+                    const width = entry.contentRect ? entry.contentRect.width : entry.target.clientWidth;
+                    if (width > 0) {
+                        setContainerWidth(width);
+                    }
+                }
+            });
+            resizeObserver.observe(containerRef.current);
+        }
+
         window.addEventListener('resize', updateWidth);
 
-        // Keep checking width for a brief period to handle tab transition latency
-        const intervalId = setInterval(updateWidth, 100);
-        setTimeout(() => clearInterval(intervalId), 1000);
-
         return () => {
+            if (resizeObserver) {
+                resizeObserver.disconnect();
+            }
             window.removeEventListener('resize', updateWidth);
-            clearInterval(intervalId);
         };
-    }, [photos]);
+    }, []);
 
     // Recalculate justified geometry when photos list or container width changes
     useEffect(() => {
-        if (photos.length === 0) return;
+        if (!photos || photos.length === 0 || containerWidth <= 0) return;
 
         const ratios = photos.map(photo => {
             const ratio = photo.width / photo.height;
