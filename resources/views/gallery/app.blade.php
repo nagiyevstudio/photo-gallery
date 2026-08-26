@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Photo Gallery | Faik Nagiyev Photography</title>
     <link rel="icon" type="image/png" sizes="64x64" href="{{ asset('favicon.png') }}">
+    <!-- Browser chrome follows the active color scheme -->
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#050505">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#faf9f7">
     <!-- Outfit & Inter Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
