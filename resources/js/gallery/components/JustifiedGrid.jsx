@@ -5,7 +5,7 @@ export default function JustifiedGrid({ photos, onPhotoClick }) {
     const containerRef = useRef(null);
     const [containerWidth, setContainerWidth] = useState(() => {
         if (typeof window !== 'undefined') {
-            return window.innerWidth > 768 ? window.innerWidth - 32 : window.innerWidth - 24;
+            return window.innerWidth > 768 ? window.innerWidth - 8 : window.innerWidth - 6;
         }
         return 1200;
     });
@@ -67,6 +67,7 @@ export default function JustifiedGrid({ photos, onPhotoClick }) {
                 containerWidth: containerWidth,
                 targetRowHeight: targetHeight,
                 boxSpacing: isMobile ? 3 : 4,
+                containerPadding: 0,
             });
 
             setLayout(geometry);

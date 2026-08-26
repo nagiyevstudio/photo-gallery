@@ -272,7 +272,7 @@ body {
 
 /* Justified Photos Grid */
 .grid-container {
-    padding: 16px;
+    padding: 4px;
     position: relative;
     min-height: 400px;
 }
@@ -544,6 +544,6 @@ body {
     }
     
     .grid-container {
-        padding: 12px;
+        padding: 3px;
     }
 }
