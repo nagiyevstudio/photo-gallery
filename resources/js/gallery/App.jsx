@@ -172,6 +172,7 @@ export default function App() {
             ) : (
                 <JustifiedGrid 
                     photos={photos} 
+                    allowDownload={project.allow_download}
                     onPhotoClick={(index) => {
                         setLightboxIndex(index);
                         setLightboxOpen(true);

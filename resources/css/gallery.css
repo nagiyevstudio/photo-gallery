@@ -19,7 +19,7 @@
     --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     
-    --gap-grid: 4px;
+    --gap-grid: 8px;
     
     --transition-fast: 150ms ease;
     --transition-normal: 300ms ease;
@@ -45,11 +45,6 @@
         --accent-glow: rgba(176, 141, 95, 0.2);
 
         --border: rgba(0, 0, 0, 0.08);
-    }
-
-    /* Hero stays photo-first, but fade into the light page background */
-    .hero-overlay {
-        background: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.25) 55%, var(--bg-primary) 100%);
     }
 
     .expiration-badge {
@@ -130,7 +125,8 @@ body {
 .hero-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.4) 50%, var(--bg-primary) 100%);
+    /* Always fades into dark — hero keeps a single style in both themes */
+    background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.4) 50%, #050505 100%);
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -314,7 +310,7 @@ body {
 
 /* Justified Photos Grid */
 .grid-container {
-    padding: 4px;
+    padding: 8px;
     position: relative;
     min-height: 400px;
 }
@@ -343,12 +339,51 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform var(--transition-slow), filter var(--transition-slow);
 }
 
-.photo-card:hover img {
-    transform: scale(1.03);
-    filter: brightness(1.05);
+/* Hover overlay: bottom gradient + quick share/download actions */
+.photo-card-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 2px;
+    padding: 8px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 45%);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+    pointer-events: none;
+}
+
+.photo-card:hover .photo-card-overlay {
+    opacity: 1;
+}
+
+.photo-card-action {
+    pointer-events: auto;
+    background: none;
+    border: none;
+    color: #ffffff;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0.9;
+    transition: color var(--transition-fast), opacity var(--transition-fast);
+}
+
+.photo-card-action:hover {
+    color: var(--accent);
+    opacity: 1;
+}
+
+.photo-card-action svg {
+    width: 18px;
+    height: 18px;
+    display: block;
 }
 
 /* Buttons */
@@ -517,21 +552,48 @@ body {
     color: var(--accent);
 }
 
-/* PhotoSwipe custom overlay buttons */
-.pswp__button--download-single, .pswp__button--share-photo {
-    background: none !important;
-    border: none !important;
-    color: #ccc !important;
-    width: 44px !important;
-    height: 44px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
+/* PhotoSwipe toolbar — unified geometry and a single icon family */
+.pswp .pswp__top-bar {
+    padding-right: 6px;
 }
 
-.pswp__button--download-single:hover, .pswp__button--share-photo:hover {
-    color: var(--accent) !important;
+.pswp .pswp__button--close {
+    margin-right: 0;
+}
+
+.pswp__top-bar .pswp__button {
+    width: 50px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--pswp-icon-color);
+    transition: color var(--transition-fast);
+}
+
+.pswp__top-bar .pswp__button:hover {
+    color: var(--accent);
+}
+
+.pswp__top-bar .pswp__button svg {
+    width: 22px;
+    height: 22px;
+    display: block;
+}
+
+/* Lightbox (PhotoSwipe) follows the page theme. Double class selector
+   wins over photoswipe/style.css regardless of asset load order. */
+.pswp.pswp {
+    --pswp-bg: var(--bg-primary);
+    --pswp-placeholder-bg: var(--bg-elevated);
+    --pswp-icon-color: var(--text-primary);
+}
+
+@media (prefers-color-scheme: light) {
+    .pswp.pswp {
+        --pswp-icon-color-secondary: #f0ede8;
+        --pswp-icon-stroke-color: #d8d4cc;
+    }
 }
 
 /* Responsive adjustment */
@@ -586,6 +648,6 @@ body {
     }
     
     .grid-container {
-        padding: 3px;
+        padding: 6px;
     }
 }
