@@ -7,6 +7,7 @@ export default function HeroSection({
     title, 
     expiresAt, 
     allowDownload, 
+    zipSize,
     projectSlug 
 }) {
     const handleScrollDown = () => {
@@ -29,7 +30,7 @@ export default function HeroSection({
                     {(allowDownload || expiresAt) && (
                         <div className="hero-actions">
                             {allowDownload && (
-                                <DownloadAllButton projectSlug={projectSlug} />
+                                <DownloadAllButton projectSlug={projectSlug} zipSize={zipSize} />
                             )}
                             <ExpirationBadge date={expiresAt} />
                         </div>

@@ -153,6 +153,7 @@ export default function App() {
                 title={project.title} 
                 expiresAt={project.expires_at || project.expires_at_formatted}
                 allowDownload={project.allow_download}
+                zipSize={project.zip_size_formatted}
                 projectSlug={project.slug}
             />
 

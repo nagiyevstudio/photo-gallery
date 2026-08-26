@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { client } from '../api/client';
 
-export default function DownloadAllButton({ projectSlug }) {
+export default function DownloadAllButton({ projectSlug, zipSize }) {
     const [isDownloading, setIsDownloading] = useState(false);
     const [error, setError] = useState(false);
 
@@ -29,6 +29,8 @@ export default function DownloadAllButton({ projectSlug }) {
         }
     };
 
+    const label = zipSize ? `Download All (${zipSize})` : 'Download All';
+
     if (error) {
         return (
             <button 
@@ -49,7 +51,7 @@ export default function DownloadAllButton({ projectSlug }) {
             disabled={isDownloading}
             type="button"
         >
-            <span>{isDownloading ? 'Starting Download...' : 'Download All (ZIP)'}</span>
+            <span>{isDownloading ? 'Starting Download...' : label}</span>
         </button>
     );
 }
