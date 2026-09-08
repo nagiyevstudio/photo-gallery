@@ -417,28 +417,76 @@
 
     <!-- Daily Views Chart -->
     <div class="card">
-        <h3 class="card-title">Daily Unique Views (Last 10 Days)</h3>
-        
         @php
-            $dailyViews = [];
-            for ($i = 9; $i >= 0; $i--) {
-                $date = now()->subDays($i)->format('Y-m-d');
-                $count = $project->projectViews()->whereDate('created_at', $date)->count();
-                $dailyViews[now()->subDays($i)->format('M d')] = $count;
+            $range = $range ?? 10;
+            if (!isset($dailyViews)) {
+                $dailyViews = [];
+                $views = $project->projectViews;
+                $maxView = 0;
+                $recentViewsCount = 0;
+                for ($i = $range - 1; $i >= 0; $i--) {
+                    $dayCarbon = now()->subDays($i);
+                    $dateStr = $dayCarbon->format('Y-m-d');
+                    $label = $dayCarbon->format('M d');
+                    $count = $views->filter(function ($pv) use ($dateStr) {
+                        if (!$pv->created_at) return false;
+                        $d = $pv->created_at instanceof \Carbon\Carbon ? $pv->created_at->format('Y-m-d') : \Carbon\Carbon::parse($pv->created_at)->format('Y-m-d');
+                        return $d === $dateStr;
+                    })->count();
+                    $dailyViews[$label] = $count;
+                    if ($count > $maxView) $maxView = $count;
+                    $recentViewsCount += $count;
+                }
             }
-            $maxView = max(array_values($dailyViews)) ?: 1;
+            $maxView = $maxView ?? (max(array_values($dailyViews)) ?: 0);
+            $recentViewsCount = $recentViewsCount ?? array_sum($dailyViews);
         @endphp
+
+        <div class="chart-header">
+            <div>
+                <h3 class="card-title" style="margin-bottom: 4px;">Daily Unique Views (Last {{ $range }} Days)</h3>
+                <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">
+                    @if($recentViewsCount > 0)
+                        <span><strong>{{ $recentViewsCount }}</strong> {{ Str::plural('view', $recentViewsCount) }} recorded in this period</span>
+                    @else
+                        <span>No views recorded in the last {{ $range }} days</span>
+                    @endif
+                    @if($project->total_views > $recentViewsCount)
+                        <span style="color: var(--text-muted); margin-left: 6px;">({{ $project->total_views }} all-time)</span>
+                    @endif
+                </p>
+            </div>
+
+            <div class="chart-range-selector">
+                <a href="?tab=stats&range=10" class="btn btn-sm {{ $range == 10 ? 'btn-primary' : 'btn-secondary' }}">10 Days</a>
+                <a href="?tab=stats&range=30" class="btn btn-sm {{ $range == 30 ? 'btn-primary' : 'btn-secondary' }}">30 Days</a>
+            </div>
+        </div>
 
         <div class="chart-container">
             @foreach($dailyViews as $dayLabel => $count)
                 @php
-                    $heightPercent = ($count / $maxView) * 80; // Scale to max 80% height of box
+                    $heightPercent = $maxView > 0 ? round(($count / $maxView) * 100) : 0;
                 @endphp
                 <div class="chart-bar-wrapper">
+                    <!-- Hover Tooltip -->
                     <div class="chart-tooltip">
-                        <span class="tooltiptext">{{ $count }} views</span>
-                        <div class="chart-bar" style="height: {{ max($heightPercent, 2) }}%;"></div>
+                        <div class="chart-tooltip-date">{{ $dayLabel }}</div>
+                        <div class="chart-tooltip-count"><strong>{{ $count }}</strong> {{ Str::plural('view', $count) }}</div>
                     </div>
+
+                    <!-- Bar Track -->
+                    <div class="chart-bar-track">
+                        @if($count > 0)
+                            <div class="chart-bar" style="height: {{ max($heightPercent, 6) }}%;">
+                                <span class="chart-bar-val">{{ $count }}</span>
+                            </div>
+                        @else
+                            <div class="chart-bar is-zero"></div>
+                        @endif
+                    </div>
+
+                    <!-- X-axis Date Label -->
                     <span class="chart-label">{{ $dayLabel }}</span>
                 </div>
             @endforeach

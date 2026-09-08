@@ -68,7 +68,46 @@ class ProjectController extends Controller
     public function show(Project $project)
     {
         $project->load(['galleries.photos', 'projectViews', 'downloadLogs']);
-        return view('admin.projects.show', compact('project'));
+
+        $range = (int) request('range', 10);
+        if (!in_array($range, [7, 10, 14, 30])) {
+            $range = 10;
+        }
+
+        $dailyViews = [];
+        $views = $project->projectViews;
+        $maxView = 0;
+        $recentViewsCount = 0;
+
+        for ($i = $range - 1; $i >= 0; $i--) {
+            $dayCarbon = now()->subDays($i);
+            $dateStr = $dayCarbon->format('Y-m-d');
+            $label = $dayCarbon->format('M d');
+
+            // Count views for this date
+            $count = $views->filter(function ($pv) use ($dateStr) {
+                if (!$pv->created_at) return false;
+                $date = $pv->created_at instanceof \Carbon\Carbon
+                    ? $pv->created_at->format('Y-m-d')
+                    : \Carbon\Carbon::parse($pv->created_at)->format('Y-m-d');
+                return $date === $dateStr;
+            })->count();
+
+            if ($count > $maxView) {
+                $maxView = $count;
+            }
+            $recentViewsCount += $count;
+
+            $dailyViews[$label] = $count;
+        }
+
+        return view('admin.projects.show', compact(
+            'project',
+            'dailyViews',
+            'range',
+            'maxView',
+            'recentViewsCount'
+        ));
     }
 
     /**
