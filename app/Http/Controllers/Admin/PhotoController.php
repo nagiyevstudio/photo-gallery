@@ -78,6 +78,9 @@ class PhotoController extends Controller
                 'success' => true,
                 'photo_id' => $photo->id,
                 'filename' => $originalFilename,
+                'gallery_id' => $gallery->id,
+                'gallery_title' => $gallery->title,
+                'gallery_photos_count' => $gallery->photos()->count(),
             ]);
         } catch (\Throwable $e) {
             if ($photo) {

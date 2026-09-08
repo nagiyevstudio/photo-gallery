@@ -122,18 +122,109 @@
 
         <!-- Hidden Inputs for Files/Folders Selection -->
         <input type="file" id="folder-upload-input" webkitdirectory directory multiple style="display:none;">
-        <input type="file" id="file-upload-input" multiple style="display:none;">
+        <input type="file" id="file-upload-input" multiple accept="image/jpeg,image/png,image/webp" style="display:none;">
 
+        <!-- Enhanced Dropzone Area -->
         <div class="upload-dropzone" id="upload-dropzone" data-project-id="{{ $project->id }}">
-            <div class="upload-icon">↑</div>
-            <p style="font-size:16px; font-weight:500; margin-bottom:8px; color: white;">Drag & Drop Folders Here</p>
-            <p style="font-size:13px; color: var(--text-secondary);">Or click here to browse files/folders</p>
+            <div class="upload-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+            </div>
+            <p style="font-size:17px; font-weight:600; margin-bottom:6px; color: white;">
+                Drag & Drop Folders or Photos Here
+            </p>
+            <p style="font-size:13px; color: var(--text-secondary); max-width: 480px; margin: 0 auto;">
+                Drop one or multiple folders directly from your file manager to create galleries automatically, or use the buttons below:
+            </p>
+            
+            <div class="dropzone-actions">
+                <button type="button" class="btn btn-primary" id="btn-browse-folders" style="display:inline-flex; align-items:center; gap:8px;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                    </svg>
+                    <span>Choose Folders</span>
+                </button>
+                <button type="button" class="btn btn-secondary" id="btn-browse-files" style="display:inline-flex; align-items:center; gap:8px;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <span>Choose Photos</span>
+                </button>
+            </div>
+
+            <div class="dropzone-tip">
+                <span>💡 Dragging folders directly from Explorer creates a separate gallery for each folder without security prompts.</span>
+            </div>
         </div>
 
-        <!-- Upload Progress list -->
-        <div class="upload-progress-container" style="display:none;">
-            <h4 style="font-size:14px; margin-bottom:12px;">Uploading Files</h4>
-            <div id="progress-list"></div>
+        <!-- Upload Dashboard Container -->
+        <div class="upload-dashboard" id="upload-dashboard" style="display:none;">
+            <!-- Completion Success Banner -->
+            <div class="upload-complete-banner" id="upload-complete-banner" style="display:none;">
+                <div class="complete-icon">✓</div>
+                <div class="complete-info">
+                    <h4 id="complete-title">Upload Completed!</h4>
+                    <p id="complete-subtitle">All photos have been processed.</p>
+                </div>
+                <button type="button" class="btn btn-primary" id="btn-goto-gallery">
+                    Go to Gallery Tabs →
+                </button>
+            </div>
+
+            <!-- Overall Summary Card -->
+            <div class="upload-summary-card">
+                <div class="summary-header">
+                    <div>
+                        <span class="summary-title" id="summary-status-text">Uploading files...</span>
+                        <span class="summary-counts" id="summary-counts-text">0 / 0 files</span>
+                    </div>
+                    <span class="summary-percent" id="summary-percent-text">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="summary-progress-bar" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- Active File Card -->
+            <div class="upload-active-card" id="upload-active-card">
+                <div class="active-file-header">
+                    <div class="active-file-title">
+                        <span class="active-spinner" id="active-spinner"></span>
+                        <span id="active-filename">Preparing upload...</span>
+                    </div>
+                    <span class="active-folder-badge" id="active-folder-badge">Gallery</span>
+                </div>
+                <div class="active-progress-row">
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="active-file-progress-bar" style="width: 0%;"></div>
+                    </div>
+                    <span class="active-percent" id="active-file-percent">0%</span>
+                </div>
+            </div>
+
+            <!-- Folders Section -->
+            <div class="upload-folders-section" id="upload-folders-section">
+                <h4 class="upload-section-title">Galleries in this upload</h4>
+                <div class="upload-folders-grid" id="folders-progress-list">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Detailed Files Accordion -->
+            <div class="upload-details-accordion">
+                <button type="button" class="accordion-toggle" id="toggle-file-details">
+                    <span id="details-toggle-text">Show detailed file list (0 files)</span>
+                    <span class="toggle-arrow">▼</span>
+                </button>
+                <div class="accordion-body" id="file-details-body" style="display:none;">
+                    <div class="file-details-list" id="progress-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
