@@ -91,7 +91,7 @@
             </label>
         </div>
 
-        <div style="display: flex; gap: 16px; border-top: 1px solid var(--border-color); padding-top: 24px;">
+        <div class="form-actions" style="display: flex; gap: 16px; border-top: 1px solid var(--border-color); padding-top: 24px; flex-wrap: wrap;">
             <button type="submit" class="btn btn-primary">
                 <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
                 <span>Create Project</span>

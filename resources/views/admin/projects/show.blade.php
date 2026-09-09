@@ -11,11 +11,11 @@
 <div class="page-header">
     <div class="page-title">
         <h2>{{ $project->title }}</h2>
-        <p>
+        <p style="word-break: break-all;">
             Public link: 
-            <a href="{{ route('project.show', $project->slug) }}" target="_blank" style="color: var(--accent); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+            <a href="{{ route('project.show', $project->slug) }}" target="_blank" style="color: var(--accent); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; word-break: break-all;">
                 <span>{{ route('project.show', $project->slug) }}</span>
-                <i data-lucide="external-link" style="width: 13px; height: 13px;"></i>
+                <i data-lucide="external-link" style="width: 13px; height: 13px; flex-shrink: 0;"></i>
             </a>
         </p>
     </div>
@@ -86,10 +86,10 @@
             <!-- Active Gallery Photo Grid -->
             <div>
                 @if($activeGallery)
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+                    <div class="gallery-toolbar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
                         <h4 style="font-size:18px;">{{ $activeGallery->title }} ({{ $activeGallery->photos->count() }} Photos)</h4>
                         
-                        <div style="display:flex; gap:8px;">
+                        <div class="gallery-toolbar-actions" style="display:flex; gap:8px; flex-wrap:wrap;">
                             <input type="file" id="active-gallery-upload-input" multiple accept="image/jpeg,image/png,image/webp" style="display:none;" data-gallery-id="{{ $activeGallery->id }}" data-gallery-title="{{ $activeGallery->title }}">
                             <button type="button" class="btn btn-primary btn-sm" id="btn-active-gallery-upload" style="display:inline-flex; align-items:center; gap:6px;">
                                 <i data-lucide="image-plus" style="width: 14px; height: 14px;"></i>
@@ -458,7 +458,7 @@
                                 <span>Size exceeds 2 GB threshold</span>
                             </p>
                             To prevent server timeouts, compiling via the browser is disabled. Please package the photos on your computer and upload the ZIP archive directly via FTP to:
-                            <br><code style="display: block; margin-top: 8px; background: #000; padding: 6px 10px; border-radius: 4px; color: #fff; font-size:12px;">www/nagiyev_studio/gallery.nagiyev.com/storage/app/zips/{{ $project->id }}.zip</code>
+                            <br><code style="display: block; margin-top: 8px; background: #000; padding: 6px 10px; border-radius: 4px; color: #fff; font-size:12px; word-break: break-all;">www/nagiyev_studio/gallery.nagiyev.com/storage/app/zips/{{ $project->id }}.zip</code>
                         </div>
                     @else
                         <div style="display: flex; flex-direction: column; gap: 12px;">
@@ -493,7 +493,7 @@
                 </div>
             </div>
 
-            <div style="display: flex; gap: 16px; border-top: 1px solid var(--border-color); padding-top: 24px;">
+            <div class="form-actions" style="display: flex; gap: 16px; border-top: 1px solid var(--border-color); padding-top: 24px; flex-wrap: wrap;">
                 <button type="submit" class="btn btn-primary" style="display:inline-flex; align-items:center; gap:8px;">
                     <i data-lucide="save" style="width: 16px; height: 16px;"></i>
                     <span>Save Configuration</span>
@@ -624,8 +624,8 @@
 <!-- --- MODALS --- -->
 
 <!-- Add Gallery Modal -->
-<div id="add-gallery-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:100;">
-    <div class="card" style="width:100%; max-width:480px; margin:24px;">
+<div id="add-gallery-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:100; padding: 16px;">
+    <div class="card" style="width:100%; max-width:480px; margin:0;">
         <h3 class="card-title">Add New Gallery Tab</h3>
         <form action="{{ route('admin.projects.galleries.store', $project->id) }}" method="POST">
             @csrf
@@ -643,8 +643,8 @@
 
 <!-- Rename Gallery Modals -->
 @if($activeGallery)
-<div id="rename-gallery-modal-{{ $activeGallery->id }}" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:100;">
-    <div class="card" style="width:100%; max-width:480px; margin:24px;">
+<div id="rename-gallery-modal-{{ $activeGallery->id }}" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:100; padding: 16px;">
+    <div class="card" style="width:100%; max-width:480px; margin:0;">
         <h3 class="card-title">Rename Gallery Tab</h3>
         <form action="{{ route('admin.projects.galleries.update', [$project->id, $activeGallery->id]) }}" method="POST">
             @csrf

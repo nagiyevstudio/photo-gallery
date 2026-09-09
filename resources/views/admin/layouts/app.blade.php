@@ -8,39 +8,59 @@
     @vite(['resources/css/admin.css', 'resources/js/admin/app.js'])
 </head>
 <body>
-    <div class="layout-wrapper">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar">
-            <div class="logo-section">
-                <div class="logo-icon">P</div>
-                <span class="logo-text">Nagiyev Photo</span>
-            </div>
+    <div class="admin-app">
+        <!-- Sticky Top Navigation Header -->
+        <header class="admin-header">
+            <div class="admin-header-container">
+                <!-- Left: Logo and Brand -->
+                <div class="header-left">
+                    <a href="{{ route('admin.dashboard') }}" class="logo-section">
+                        <div class="logo-icon">P</div>
+                        <span class="logo-text">Nagiyev Photo</span>
+                        <span class="admin-badge">Admin</span>
+                    </a>
+                </div>
 
-            <ul class="nav-menu">
-                <li>
-                    <a href="{{ route('admin.dashboard') }}" class="nav-link {{ Route::is('admin.dashboard') ? 'active' : '' }}">
-                        <i data-lucide="layout-dashboard" style="width: 18px; height: 18px;"></i>
+                <!-- Center: Navigation Tabs for Desktop -->
+                <nav class="header-nav">
+                    <a href="{{ route('admin.dashboard') }}" class="nav-item {{ Route::is('admin.dashboard') ? 'active' : '' }}">
+                        <i data-lucide="layout-dashboard"></i>
                         <span>Dashboard</span>
                     </a>
-                </li>
-                <li>
-                    <a href="{{ route('admin.projects.index') }}" class="nav-link {{ Route::is('admin.projects.*') ? 'active' : '' }}">
-                        <i data-lucide="images" style="width: 18px; height: 18px;"></i>
+                    <a href="{{ route('admin.projects.index') }}" class="nav-item {{ Route::is('admin.projects.*') ? 'active' : '' }}">
+                        <i data-lucide="images"></i>
                         <span>Projects</span>
                     </a>
-                </li>
-            </ul>
+                </nav>
 
-            <div class="sidebar-footer">
-                <form action="{{ route('admin.logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="nav-link" style="background:none; border:none; width:100%; text-align:left; cursor:pointer;">
-                        <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
-                        <span>Logout</span>
-                    </button>
-                </form>
+                <!-- Right: Quick actions and Logout -->
+                <div class="header-right">
+                    <a href="/" target="_blank" class="header-action-btn" title="View Public Gallery">
+                        <i data-lucide="external-link"></i>
+                        <span class="action-btn-text">View Site</span>
+                    </a>
+                    <form action="{{ route('admin.logout') }}" method="POST" class="logout-form">
+                        @csrf
+                        <button type="submit" class="header-logout-btn" title="Sign out">
+                            <i data-lucide="log-out"></i>
+                            <span class="action-btn-text">Logout</span>
+                        </button>
+                    </form>
+                </div>
             </div>
-        </aside>
+
+            <!-- Mobile Navigation (Segmented Bar) -->
+            <div class="header-mobile-nav">
+                <a href="{{ route('admin.dashboard') }}" class="mobile-nav-item {{ Route::is('admin.dashboard') ? 'active' : '' }}">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ route('admin.projects.index') }}" class="mobile-nav-item {{ Route::is('admin.projects.*') ? 'active' : '' }}">
+                    <i data-lucide="images"></i>
+                    <span>Projects</span>
+                </a>
+            </div>
+        </header>
 
         <!-- Main Content Slot -->
         <main class="content-wrapper">

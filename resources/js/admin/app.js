@@ -141,6 +141,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         Sortable.create(galleriesList, {
             animation: 150,
+            delay: 200,
+            delayOnTouchOnly: true,
+            touchStartThreshold: 5,
             onEnd: function () {
                 const order = Array.from(galleriesList.querySelectorAll('.gallery-tab-item')).map(item => item.dataset.id);
                 
@@ -171,6 +174,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         Sortable.create(photoGrid, {
             animation: 150,
+            delay: 200,
+            delayOnTouchOnly: true,
+            touchStartThreshold: 5,
             onEnd: function () {
                 const order = Array.from(photoGrid.querySelectorAll('.photo-item')).map(item => item.dataset.id);
                 
