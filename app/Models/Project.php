@@ -84,6 +84,50 @@ class Project extends Model
         return (int) $this->galleries->flatMap->photos->sum('file_size');
     }
 
+    public function totalPhotosCount(): int
+    {
+        return (int) $this->galleries->flatMap->photos->count();
+    }
+
+    public function zipFilePath(): string
+    {
+        return storage_path("app/zips/{$this->id}.zip");
+    }
+
+    public function getZipInfo(): ?array
+    {
+        $path = $this->zipFilePath();
+        if (!file_exists($path)) {
+            return null;
+        }
+
+        $zip = new \ZipArchive();
+        $filesCount = 0;
+        if ($zip->open($path) === true) {
+            $filesCount = $zip->numFiles;
+            $zip->close();
+        }
+
+        $projectPhotosCount = $this->totalPhotosCount();
+        $isOutdated = ($filesCount !== $projectPhotosCount);
+        $fileSize = filesize($path);
+
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $i = $fileSize > 0 ? (int) floor(log($fileSize, 1024)) : 0;
+        $formattedSize = round($fileSize / pow(1024, max($i, 0)), 2) . ' ' . ($units[$i] ?? 'MB');
+
+        return [
+            'exists' => true,
+            'size' => $fileSize,
+            'formatted_size' => $formattedSize,
+            'modified_at' => filemtime($path),
+            'formatted_date' => date('d.m.Y H:i', filemtime($path)),
+            'files_count' => $filesCount,
+            'project_photos_count' => $projectPhotosCount,
+            'is_outdated' => $isOutdated,
+        ];
+    }
+
     public function formattedTotalPhotosSize(): string
     {
         $bytes = $this->totalPhotosSize();

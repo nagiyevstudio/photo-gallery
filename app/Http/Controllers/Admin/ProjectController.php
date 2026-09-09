@@ -201,6 +201,11 @@ class ProjectController extends Controller
 
         $zipPath = $zipDir . '/' . $project->id . '.zip';
 
+        // Explicitly delete any old archive first before rebuilding
+        if (file_exists($zipPath)) {
+            unlink($zipPath);
+        }
+
         $zip = new \ZipArchive();
         if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
             return redirect()->back()
@@ -238,8 +243,25 @@ class ProjectController extends Controller
                 ->with('tab', 'settings');
         }
 
+        $sizeMb = round(filesize($zipPath) / 1024 / 1024, 2);
+
         return redirect()->route('admin.projects.show', [$project->id, 'tab' => 'settings'])
-            ->with('success', 'ZIP archive compiled successfully! (' . round(filesize($zipPath) / 1024 / 1024, 2) . ' MB)')
+            ->with('success', "ZIP archive compiled successfully with {$photoAddedCount} photos! ({$sizeMb} MB)")
+            ->with('tab', 'settings');
+    }
+
+    /**
+     * Delete existing ZIP archive.
+     */
+    public function deleteZip(Project $project)
+    {
+        $zipPath = storage_path('app/zips/' . $project->id . '.zip');
+        if (file_exists($zipPath)) {
+            unlink($zipPath);
+        }
+
+        return redirect()->route('admin.projects.show', [$project->id, 'tab' => 'settings'])
+            ->with('success', 'ZIP archive deleted from server.')
             ->with('tab', 'settings');
     }
 }

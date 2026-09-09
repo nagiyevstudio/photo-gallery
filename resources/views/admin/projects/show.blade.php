@@ -67,17 +67,30 @@
             <!-- Active Gallery Photo Grid -->
             <div>
                 @if($activeGallery)
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
                         <h4 style="font-size:18px;">{{ $activeGallery->title }} ({{ $activeGallery->photos->count() }} Photos)</h4>
                         
-                        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('rename-gallery-modal-{{ $activeGallery->id }}').style.display='flex'">
-                            Rename Gallery
-                        </button>
+                        <div style="display:flex; gap:8px;">
+                            <input type="file" id="active-gallery-upload-input" multiple accept="image/jpeg,image/png,image/webp" style="display:none;" data-gallery-id="{{ $activeGallery->id }}" data-gallery-title="{{ $activeGallery->title }}">
+                            <button type="button" class="btn btn-primary btn-sm" id="btn-active-gallery-upload" style="display:inline-flex; align-items:center; gap:6px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                <span>+ Add Photos</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('rename-gallery-modal-{{ $activeGallery->id }}').style.display='flex'">
+                                Rename Gallery
+                            </button>
+                        </div>
                     </div>
 
                     @if($activeGallery->photos->isEmpty())
                         <div class="card" style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
-                            <p>No photos in this gallery. Drag folders or files in the "Upload Media" tab.</p>
+                            <p style="margin-bottom: 16px;">No photos in this gallery yet.</p>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('active-gallery-upload-input').click()">
+                                + Add Photos to this Gallery
+                            </button>
                         </div>
                     @else
                         <div class="photos-grid" id="photo-grid" data-project-id="{{ $project->id }}">
@@ -123,6 +136,24 @@
         <!-- Hidden Inputs for Files/Folders Selection -->
         <input type="file" id="folder-upload-input" webkitdirectory directory multiple style="display:none;">
         <input type="file" id="file-upload-input" multiple accept="image/jpeg,image/png,image/webp" style="display:none;">
+
+        <!-- Target Gallery Selector for loose photos -->
+        <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 12px 16px; border-radius: 6px;">
+            <label for="target-gallery-select" style="font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 0;">
+                📁 Target gallery for individual photos:
+            </label>
+            <select id="target-gallery-select" class="form-control" style="width: auto; min-width: 220px; padding: 6px 12px; font-size: 13px;">
+                <option value="">Auto (Folder name or "Unsorted")</option>
+                @foreach($project->galleries as $gallery)
+                    <option value="{{ $gallery->id }}" data-gallery-title="{{ $gallery->title }}" {{ $activeGallery && $activeGallery->id === $gallery->id ? 'selected' : '' }}>
+                        {{ $gallery->title }} ({{ $gallery->photos->count() }})
+                    </option>
+                @endforeach
+            </select>
+            <span style="font-size: 12px; color: var(--text-muted);">
+                (Dropped folders will always use their own folder names)
+            </span>
+        </div>
 
         <!-- Enhanced Dropzone Area -->
         <div class="upload-dropzone" id="upload-dropzone" data-project-id="{{ $project->id }}">
@@ -235,6 +266,10 @@
         <form id="generate-zip-form" action="{{ route('admin.projects.generate-zip', $project->id) }}" method="POST" style="display: none;">
             @csrf
         </form>
+        <form id="delete-zip-form" action="{{ route('admin.projects.zip.destroy', $project->id) }}" method="POST" style="display: none;" onsubmit="return confirm('Are you sure you want to delete the ZIP archive from the server? Clients will not be able to download all photos until it is recompiled.');">
+            @csrf
+            @method('DELETE')
+        </form>
         <h3 class="card-title">Project Configuration</h3>
         
         <form action="{{ route('admin.projects.update', $project->id) }}" method="POST" enctype="multipart/form-data">
@@ -314,16 +349,63 @@
             <div class="form-group" style="margin-top: 24px; margin-bottom: 32px; border-top: 1px solid var(--border-color); padding-top: 24px;">
                 <label class="form-label">ZIP Archive Management</label>
 
+                @php
+                    $zipInfo = $project->getZipInfo();
+                    $totalBytes = $project->totalPhotosSize();
+                    $isTooLarge = $totalBytes > 2 * 1024 * 1024 * 1024; // 2 GB threshold
+                @endphp
+
                 <!-- Current ZIP Status -->
-                @if(file_exists(storage_path("app/zips/{$project->id}.zip")))
-                    <div style="background: rgba(200, 169, 126, 0.05); border: 1px solid rgba(200, 169, 126, 0.2); padding: 16px; border-radius: 6px; margin-bottom: 16px;">
-                        <p style="font-size:14px; color: var(--accent); margin-bottom: 4px; font-weight: 500;">
-                            ✓ ZIP Archive is ready on server
-                        </p>
-                        <p style="font-size:13px; color: var(--text-secondary); margin-bottom: 0;">
-                            Size: {{ round(filesize(storage_path("app/zips/{$project->id}.zip")) / 1024 / 1024, 2) }} MB. Clients can download it immediately.
-                        </p>
-                    </div>
+                @if($zipInfo)
+                    @if($zipInfo['is_outdated'])
+                        <div style="background: rgba(234, 179, 8, 0.08); border: 1px solid rgba(234, 179, 8, 0.35); padding: 16px; border-radius: 6px; margin-bottom: 16px;">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+                                <div>
+                                    <p style="font-size:14px; color: #eab308; margin-bottom: 4px; font-weight: 600;">
+                                        ⚠️ ZIP Archive is Outdated!
+                                    </p>
+                                    <p style="font-size:13px; color: var(--text-secondary); margin-bottom: 4px;">
+                                        The current archive contains <strong>{{ $zipInfo['files_count'] }}</strong> photos ({{ $zipInfo['formatted_size'] }}), but the project now has <strong>{{ $zipInfo['project_photos_count'] }}</strong> photos.
+                                    </p>
+                                    <p style="font-size:12px; color: var(--text-muted); margin-bottom: 0;">
+                                        Last compiled: {{ $zipInfo['formatted_date'] }}. Clients downloading the archive will not receive the latest photos until it is recompiled.
+                                    </p>
+                                </div>
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <button type="submit" form="generate-zip-form" class="btn btn-primary btn-sm" style="background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600;">
+                                        🔄 Rebuild ZIP (Delete Old)
+                                    </button>
+                                    <button type="submit" form="delete-zip-form" class="btn btn-secondary btn-sm" style="color: var(--danger); border-color: rgba(239,68,68,0.3);">
+                                        Delete ZIP
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <div style="background: rgba(34, 197, 94, 0.06); border: 1px solid rgba(34, 197, 94, 0.25); padding: 16px; border-radius: 6px; margin-bottom: 16px;">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+                                <div>
+                                    <p style="font-size:14px; color: var(--success, #22c55e); margin-bottom: 4px; font-weight: 600;">
+                                        ✓ ZIP Archive is up to date
+                                    </p>
+                                    <p style="font-size:13px; color: var(--text-secondary); margin-bottom: 4px;">
+                                        Contains all <strong>{{ $zipInfo['files_count'] }}</strong> photos ({{ $zipInfo['formatted_size'] }}). Clients can download it immediately.
+                                    </p>
+                                    <p style="font-size:12px; color: var(--text-muted); margin-bottom: 0;">
+                                        Compiled on: {{ $zipInfo['formatted_date'] }}
+                                    </p>
+                                </div>
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <button type="submit" form="generate-zip-form" class="btn btn-secondary btn-sm" title="Recompile archive from scratch">
+                                        🔄 Rebuild ZIP
+                                    </button>
+                                    <button type="submit" form="delete-zip-form" class="btn btn-secondary btn-sm" style="color: var(--danger); border-color: rgba(239,68,68,0.3);">
+                                        Delete ZIP
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 @else
                     <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 16px; border-radius: 6px; margin-bottom: 16px; color: var(--text-secondary);">
                         <p style="font-size:13px; margin-bottom: 0;">
@@ -331,11 +413,6 @@
                         </p>
                     </div>
                 @endif
-
-                @php
-                    $totalBytes = $project->totalPhotosSize();
-                    $isTooLarge = $totalBytes > 2 * 1024 * 1024 * 1024; // 2 GB threshold
-                @endphp
 
                 <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px; background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); padding: 16px; border-radius: 6px;">
                     <p style="font-size:13px; color: var(--text-secondary); margin-bottom: 0;">
@@ -353,10 +430,10 @@
                     @else
                         <div style="display: flex; flex-direction: column; gap: 12px;">
                             <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0;">
-                                You can compile the ZIP archive directly on the server (packages files without compression, takes only a few seconds).
+                                {{ $zipInfo ? 'You can recompile the ZIP archive directly on the server (deletes the previous archive and packages current photos).' : 'You can compile the ZIP archive directly on the server (packages files without compression, takes only a few seconds).' }}
                             </p>
                             <button type="submit" form="generate-zip-form" class="btn btn-secondary" style="width: fit-content; background: var(--accent); color: #000; border-color: var(--accent); padding: 8px 16px; font-weight: 500;">
-                                ⚙ Compile ZIP on Server
+                                ⚙ {{ $zipInfo ? 'Recompile ZIP Archive' : 'Compile ZIP on Server' }}
                             </button>
                         </div>
                     @endif

@@ -146,6 +146,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileDetailsBody = document.getElementById('file-details-body');
     const progressList = document.getElementById('progress-list');
 
+    const activeGalleryUploadInput = document.getElementById('active-gallery-upload-input');
+    const btnActiveGalleryUpload = document.getElementById('btn-active-gallery-upload');
+    const targetGallerySelect = document.getElementById('target-gallery-select');
+
     if (dropzone) {
         const projectId = dropzone.dataset.projectId;
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -167,6 +171,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function slugify(text) {
             return encodeURIComponent(text).replace(/%/g, '_');
+        }
+
+        function getTargetGallery() {
+            if (targetGallerySelect && targetGallerySelect.value) {
+                const galleryId = targetGallerySelect.value;
+                const opt = targetGallerySelect.options[targetGallerySelect.selectedIndex];
+                const galleryName = opt.dataset.galleryTitle || opt.text.replace(/\s*\(\d+.*?\)$/, '').trim();
+                return { galleryId, galleryName };
+            }
+            return { galleryId: null, galleryName: 'Unsorted' };
+        }
+
+        // Active gallery upload button in Gallery Tabs
+        if (btnActiveGalleryUpload && activeGalleryUploadInput) {
+            btnActiveGalleryUpload.addEventListener('click', () => {
+                activeGalleryUploadInput.click();
+            });
+        }
+
+        if (activeGalleryUploadInput) {
+            activeGalleryUploadInput.addEventListener('change', () => {
+                const files = Array.from(activeGalleryUploadInput.files);
+                const galleryId = activeGalleryUploadInput.dataset.galleryId;
+                const galleryTitle = activeGalleryUploadInput.dataset.galleryTitle || 'Gallery';
+                const items = [];
+
+                files.forEach(file => {
+                    if (isImage(file.name)) {
+                        items.push({
+                            file,
+                            galleryName: galleryTitle,
+                            galleryId: galleryId
+                        });
+                    }
+                });
+
+                activeGalleryUploadInput.value = '';
+
+                if (items.length > 0) {
+                    if (targetGallerySelect) {
+                        targetGallerySelect.value = galleryId;
+                    }
+                    switchTab('upload');
+                    enqueueItems(items);
+                }
+            });
         }
 
         // Toggle detailed file list accordion
@@ -242,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             galleryName = parts[0];
                         }
                     }
-                    items.push({ file, galleryName });
+                    items.push({ file, galleryName, galleryId: null });
                 }
             });
             folderInput.value = '';
@@ -254,9 +304,14 @@ document.addEventListener('DOMContentLoaded', () => {
         fileInput.addEventListener('change', () => {
             const files = Array.from(fileInput.files);
             const items = [];
+            const target = getTargetGallery();
             files.forEach(file => {
                 if (isImage(file.name)) {
-                    items.push({ file, galleryName: 'Unsorted' });
+                    items.push({
+                        file,
+                        galleryName: target.galleryName,
+                        galleryId: target.galleryId
+                    });
                 }
             });
             fileInput.value = '';
@@ -309,9 +364,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (isImage(entry.name)) {
                         const file = await getFile(entry);
                         if (file) {
+                            let galleryName = topFolderName;
+                            let galleryId = null;
+                            if (!galleryName) {
+                                const target = getTargetGallery();
+                                galleryName = target.galleryName;
+                                galleryId = target.galleryId;
+                            }
                             fileItems.push({
                                 file,
-                                galleryName: topFolderName || 'Unsorted'
+                                galleryName,
+                                galleryId
                             });
                         }
                     }
@@ -338,16 +401,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 await Promise.all(promises);
             } else if (dataTransfer.files && dataTransfer.files.length > 0) {
+                const target = getTargetGallery();
                 Array.from(dataTransfer.files).forEach(file => {
                     if (isImage(file.name)) {
-                        let galleryName = 'Unsorted';
+                        let galleryName = target.galleryName;
+                        let galleryId = target.galleryId;
                         if (file.webkitRelativePath) {
                             const parts = file.webkitRelativePath.split('/');
                             if (parts.length > 1) {
                                 galleryName = parts[0];
+                                galleryId = null;
                             }
                         }
-                        fileItems.push({ file, galleryName });
+                        fileItems.push({ file, galleryName, galleryId });
                     }
                 });
             }
@@ -371,6 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     id,
                     file: it.file,
                     galleryName,
+                    galleryId: it.galleryId || null,
                     status: 'queued',
                     retries: 0
                 };
@@ -558,6 +625,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const formData = new FormData();
             formData.append('file', item.file);
+            if (item.galleryId) {
+                formData.append('gallery_id', item.galleryId);
+            }
             formData.append('gallery_name', item.galleryName);
 
             const xhr = new XMLHttpRequest();

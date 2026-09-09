@@ -21,6 +21,7 @@ class PhotoController extends Controller
     {
         $request->validate([
             'file' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:102400'], // max 100MB
+            'gallery_id' => ['nullable', 'integer', 'exists:galleries,id'],
             'gallery_name' => ['nullable', 'string', 'max:255'],
         ]);
 
@@ -30,19 +31,22 @@ class PhotoController extends Controller
         try {
             $file = $request->file('file');
 
-            // Resolve gallery — use firstOrCreate to prevent race condition
-            // when multiple concurrent uploads try to create the same gallery
-            $galleryName = $request->input('gallery_name') ?: 'Unsorted';
-            $galleryName = trim($galleryName);
-            $gallerySlug = Str::slug($galleryName);
+            // Resolve gallery: either by explicit gallery_id or by gallery_name
+            if ($request->filled('gallery_id')) {
+                $gallery = $project->galleries()->findOrFail($request->input('gallery_id'));
+            } else {
+                $galleryName = $request->input('gallery_name') ?: 'Unsorted';
+                $galleryName = trim($galleryName);
+                $gallerySlug = Str::slug($galleryName);
 
-            $gallery = $project->galleries()->firstOrCreate(
-                ['slug' => $gallerySlug],
-                [
-                    'title' => $galleryName,
-                    'sort_order' => ($project->galleries()->max('sort_order') ?? 0) + 1,
-                ]
-            );
+                $gallery = $project->galleries()->firstOrCreate(
+                    ['slug' => $gallerySlug],
+                    [
+                        'title' => $galleryName,
+                        'sort_order' => ($project->galleries()->max('sort_order') ?? 0) + 1,
+                    ]
+                );
+            }
 
             // Generate unique filename
             $originalFilename = $file->getClientOriginalName();

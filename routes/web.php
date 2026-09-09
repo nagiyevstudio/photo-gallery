@@ -36,6 +36,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('photos/{photo}/hero', [PhotoController::class, 'setHero'])->name('photos.hero');
             Route::delete('photos/{photo}', [PhotoController::class, 'destroy'])->name('photos.destroy');
             Route::post('generate-zip', [ProjectController::class, 'generateZip'])->name('generate-zip');
+            Route::delete('zip', [ProjectController::class, 'deleteZip'])->name('zip.destroy');
         });
     });
 });
