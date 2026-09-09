@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Share2, Check } from 'lucide-react';
 
 export default function ShareButton({ url, label = 'Share' }) {
     const [copied, setCopied] = useState(false);
@@ -16,7 +17,17 @@ export default function ShareButton({ url, label = 'Share' }) {
 
     return (
         <button className="btn-outline" onClick={handleShare}>
-            {copied ? 'Link Copied!' : label}
+            {copied ? (
+                <>
+                    <Check size={14} />
+                    <span>Link Copied!</span>
+                </>
+            ) : (
+                <>
+                    <Share2 size={14} />
+                    <span>{label}</span>
+                </>
+            )}
         </button>
     );
 }

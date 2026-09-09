@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Download, AlertCircle, Loader2 } from 'lucide-react';
 import { client } from '../api/client';
 
 export default function DownloadAllButton({ projectSlug, zipSize }) {
@@ -39,6 +40,7 @@ export default function DownloadAllButton({ projectSlug, zipSize }) {
                 style={{ borderColor: 'var(--danger)', color: 'var(--danger)' }}
                 type="button"
             >
+                <AlertCircle size={14} />
                 <span>ZIP Not Ready</span>
             </button>
         );
@@ -51,7 +53,17 @@ export default function DownloadAllButton({ projectSlug, zipSize }) {
             disabled={isDownloading}
             type="button"
         >
-            <span>{isDownloading ? 'Starting Download...' : label}</span>
+            {isDownloading ? (
+                <>
+                    <Loader2 size={14} className="lucide-spin" />
+                    <span>Starting Download...</span>
+                </>
+            ) : (
+                <>
+                    <Download size={14} />
+                    <span>{label}</span>
+                </>
+            )}
         </button>
     );
 }

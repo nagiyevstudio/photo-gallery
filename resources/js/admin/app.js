@@ -1,10 +1,86 @@
 import Alpine from 'alpinejs';
 import Sortable from 'sortablejs';
+import {
+    createIcons,
+    LayoutDashboard,
+    Images,
+    LogOut,
+    Plus,
+    Trash2,
+    RefreshCw,
+    FolderPlus,
+    Folder,
+    UploadCloud,
+    ArrowLeft,
+    ArrowRight,
+    ExternalLink,
+    Check,
+    CheckCircle,
+    AlertTriangle,
+    X,
+    Star,
+    Edit3,
+    Clock,
+    Eye,
+    Download,
+    Share2,
+    Info,
+    Calendar,
+    Lock,
+    Save,
+    Archive,
+    Settings,
+    BarChart3,
+    ImagePlus,
+    ChevronDown,
+    Loader2
+} from 'lucide';
+
+const lucideIcons = {
+    LayoutDashboard,
+    Images,
+    LogOut,
+    Plus,
+    Trash2,
+    RefreshCw,
+    FolderPlus,
+    Folder,
+    UploadCloud,
+    ArrowLeft,
+    ArrowRight,
+    ExternalLink,
+    Check,
+    CheckCircle,
+    AlertTriangle,
+    X,
+    Star,
+    Edit3,
+    Clock,
+    Eye,
+    Download,
+    Share2,
+    Info,
+    Calendar,
+    Lock,
+    Save,
+    Archive,
+    Settings,
+    BarChart3,
+    ImagePlus,
+    ChevronDown,
+    Loader2
+};
+
+export function initLucideIcons() {
+    createIcons({ icons: lucideIcons });
+}
 
 window.Alpine = Alpine;
 Alpine.start();
 
 document.addEventListener('DOMContentLoaded', () => {
+    initLucideIcons();
+
     // 1. Tab Navigation logic
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
@@ -42,6 +118,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const newUrl = new URL(window.location.href);
         newUrl.searchParams.set('tab', tabId);
         window.history.replaceState({}, '', newUrl);
+
+        initLucideIcons();
     }
 
     tabButtons.forEach(btn => {
@@ -453,7 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const fileHtml = `
                     <div class="upload-file-progress" id="file-${id}">
                         <div class="upload-file-info">
-                            <span class="file-status-icon queued" id="icon-${id}">⏸</span>
+                            <span class="file-status-icon queued" id="icon-${id}"><i data-lucide="clock" style="width:12px; height:12px;"></i></span>
                             <span style="font-weight: 500;" title="${it.file.name}">${it.file.name}</span>
                             <small style="opacity:0.6">(${galleryName})</small>
                         </div>
@@ -462,6 +540,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 progressList.insertAdjacentHTML('beforeend', fileHtml);
             });
+
+            initLucideIcons();
 
             // Update folder cards in UI
             renderFolderCards();
@@ -476,6 +556,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function renderFolderCards() {
+            let hasNewCards = false;
             uploadState.folderStats.forEach((stats, galleryName) => {
                 const slug = slugify(galleryName);
                 let card = document.getElementById(`folder-card-${slug}`);
@@ -489,7 +570,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let cardClass = '';
 
                 if (isAllDone) {
-                    badgeText = stats.failed === 0 ? 'Completed ✓' : `${stats.failed} Failed`;
+                    badgeText = stats.failed === 0 ? 'Completed' : `${stats.failed} Failed`;
                     badgeClass = stats.failed === 0 ? 'badge-done' : 'badge-queued';
                     cardClass = stats.failed === 0 ? 'done' : '';
                 } else if (done > 0 || (uploadState.isUploading && uploadState.queue[uploadState.currentIndex]?.galleryName === galleryName)) {
@@ -499,10 +580,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (!card) {
+                    hasNewCards = true;
                     const cardHtml = `
                         <div class="folder-progress-card ${cardClass}" id="folder-card-${slug}">
                             <div class="folder-card-top">
-                                <span class="folder-card-name" title="${galleryName}">📁 ${galleryName}</span>
+                                <span class="folder-card-name" title="${galleryName}"><i data-lucide="folder" style="width:14px; height:14px; margin-right:5px;"></i>${galleryName}</span>
                                 <span class="folder-card-badge ${badgeClass}" id="folder-badge-${slug}">${badgeText}</span>
                             </div>
                             <div class="progress-bar-bg">
@@ -534,6 +616,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (pctEl) pctEl.textContent = `${pct}%`;
                 }
             });
+
+            if (hasNewCards) {
+                initLucideIcons();
+            }
         }
 
         function updateOverallSummary() {
@@ -552,7 +638,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (done === total && total > 0) {
                 if (failed === 0) {
-                    summaryStatusText.textContent = 'All files uploaded ✓';
+                    summaryStatusText.textContent = 'All files uploaded';
                     summaryCountsText.textContent = `${completed} of ${total} photos`;
                     summaryProgressBar.className = 'progress-bar-fill success';
                 } else {
@@ -584,10 +670,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const foldersCount = uploadState.folderStats.size;
 
                 if (uploadState.failedFiles === 0) {
-                    completeTitle.textContent = 'Upload Completed! 🎉';
+                    completeTitle.textContent = 'Upload Completed!';
                     completeSubtitle.textContent = `Successfully uploaded ${completed} photo${completed === 1 ? '' : 's'} across ${foldersCount} ${foldersCount === 1 ? 'gallery' : 'galleries'}.`;
                 } else {
-                    completeTitle.textContent = 'Upload Completed with warnings ⚠️';
+                    completeTitle.textContent = 'Upload Completed with warnings';
                     completeSubtitle.textContent = `${completed} of ${total} photos uploaded across ${foldersCount} ${foldersCount === 1 ? 'gallery' : 'galleries'} (${uploadState.failedFiles} failed).`;
                 }
                 return;
@@ -613,8 +699,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const iconEl = document.getElementById(`icon-${item.id}`);
             const statusEl = document.getElementById(`status-${item.id}`);
             if (iconEl) {
-                iconEl.textContent = '⏳';
+                iconEl.innerHTML = '<i data-lucide="loader-2" class="lucide-spin" style="width:12px; height:12px;"></i>';
                 iconEl.className = 'file-status-icon uploading';
+                initLucideIcons();
             }
             if (statusEl) {
                 statusEl.textContent = 'Uploading...';
@@ -653,11 +740,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     if (iconEl) {
-                        iconEl.textContent = '✓';
+                        iconEl.innerHTML = '<i data-lucide="check" style="width:12px; height:12px;"></i>';
                         iconEl.className = 'file-status-icon done';
+                        initLucideIcons();
                     }
                     if (statusEl) {
-                        statusEl.textContent = 'Done ✓';
+                        statusEl.textContent = 'Done';
                         statusEl.style.color = 'var(--success)';
                     }
 
@@ -690,8 +778,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     if (iconEl) {
-                        iconEl.textContent = '✗';
+                        iconEl.innerHTML = '<i data-lucide="x" style="width:12px; height:12px;"></i>';
                         iconEl.className = 'file-status-icon failed';
+                        initLucideIcons();
                     }
                     if (statusEl) {
                         statusEl.textContent = `Failed (${errorCode})`;

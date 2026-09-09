@@ -9,6 +9,7 @@
         <p>Set up access and expiration settings for your new project</p>
     </div>
     <a href="{{ route('admin.projects.index') }}" class="btn btn-secondary">
+        <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
         <span>Cancel</span>
     </a>
 </div>
@@ -91,7 +92,10 @@
         </div>
 
         <div style="display: flex; gap: 16px; border-top: 1px solid var(--border-color); padding-top: 24px;">
-            <button type="submit" class="btn btn-primary">Create Project</button>
+            <button type="submit" class="btn btn-primary">
+                <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                <span>Create Project</span>
+            </button>
             <a href="{{ route('admin.projects.index') }}" class="btn btn-secondary">Back to List</a>
         </div>
     </form>

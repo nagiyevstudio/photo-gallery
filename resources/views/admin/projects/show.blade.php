@@ -13,22 +13,36 @@
         <h2>{{ $project->title }}</h2>
         <p>
             Public link: 
-            <a href="{{ route('project.show', $project->slug) }}" target="_blank" style="color: var(--accent); text-decoration: none;">
-                {{ route('project.show', $project->slug) }} ↗
+            <a href="{{ route('project.show', $project->slug) }}" target="_blank" style="color: var(--accent); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                <span>{{ route('project.show', $project->slug) }}</span>
+                <i data-lucide="external-link" style="width: 13px; height: 13px;"></i>
             </a>
         </p>
     </div>
     <a href="{{ route('admin.projects.index') }}" class="btn btn-secondary">
+        <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
         <span>Back to Projects</span>
     </a>
 </div>
 
 <!-- Tabs Navigation -->
 <div class="tabs-navigation">
-    <button class="tab-btn active" data-tab="gallery">Gallery Tabs</button>
-    <button class="tab-btn" data-tab="upload">Upload Media</button>
-    <button class="tab-btn" data-tab="settings">Project Settings</button>
-    <button class="tab-btn" data-tab="stats">Statistics</button>
+    <button class="tab-btn active" data-tab="gallery" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i data-lucide="images" style="width: 15px; height: 15px;"></i>
+        <span>Gallery Tabs</span>
+    </button>
+    <button class="tab-btn" data-tab="upload" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i data-lucide="upload-cloud" style="width: 15px; height: 15px;"></i>
+        <span>Upload Media</span>
+    </button>
+    <button class="tab-btn" data-tab="settings" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i data-lucide="settings" style="width: 15px; height: 15px;"></i>
+        <span>Project Settings</span>
+    </button>
+    <button class="tab-btn" data-tab="stats" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i data-lucide="bar-chart-3" style="width: 15px; height: 15px;"></i>
+        <span>Statistics</span>
+    </button>
 </div>
 
 <!-- --- 1. GALLERY TAB --- -->
@@ -43,7 +57,10 @@
             <div class="gallery-sidebar">
                 <div class="gallery-sidebar-title">
                     <span>Galleries</span>
-                    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('add-gallery-modal').style.display='flex'">+ Add</button>
+                    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('add-gallery-modal').style.display='flex'">
+                        <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
+                        <span>Add</span>
+                    </button>
                 </div>
                 
                 <div class="tabs-list" id="galleries-list" data-project-id="{{ $project->id }}" data-project-slug="{{ $project->slug }}">
@@ -57,7 +74,9 @@
                             <form action="{{ route('admin.projects.galleries.destroy', [$project->id, $gallery->id]) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this gallery and all its photos?');" style="display:inline;">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size: 11px;">×</button>
+                                <button type="submit" style="background:none; border:none; color:var(--text-muted); cursor:pointer; display:inline-flex; align-items:center; padding: 2px;" title="Delete gallery">
+                                    <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
+                                </button>
                             </form>
                         </div>
                     @endforeach
@@ -73,14 +92,12 @@
                         <div style="display:flex; gap:8px;">
                             <input type="file" id="active-gallery-upload-input" multiple accept="image/jpeg,image/png,image/webp" style="display:none;" data-gallery-id="{{ $activeGallery->id }}" data-gallery-title="{{ $activeGallery->title }}">
                             <button type="button" class="btn btn-primary btn-sm" id="btn-active-gallery-upload" style="display:inline-flex; align-items:center; gap:6px;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                                </svg>
-                                <span>+ Add Photos</span>
+                                <i data-lucide="image-plus" style="width: 14px; height: 14px;"></i>
+                                <span>Add Photos</span>
                             </button>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('rename-gallery-modal-{{ $activeGallery->id }}').style.display='flex'">
-                                Rename Gallery
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('rename-gallery-modal-{{ $activeGallery->id }}').style.display='flex'" style="display:inline-flex; align-items:center; gap:6px;">
+                                <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
+                                <span>Rename Gallery</span>
                             </button>
                         </div>
                     </div>
@@ -88,8 +105,9 @@
                     @if($activeGallery->photos->isEmpty())
                         <div class="card" style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
                             <p style="margin-bottom: 16px;">No photos in this gallery yet.</p>
-                            <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('active-gallery-upload-input').click()">
-                                + Add Photos to this Gallery
+                            <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('active-gallery-upload-input').click()" style="display:inline-flex; align-items:center; gap:6px;">
+                                <i data-lucide="image-plus" style="width: 14px; height: 14px;"></i>
+                                <span>Add Photos to this Gallery</span>
                             </button>
                         </div>
                     @else
@@ -98,13 +116,19 @@
                                 <div class="photo-item {{ $project->hero_photo_id === $photo->id ? 'is-cover' : '' }}" data-id="{{ $photo->id }}">
                                     <img src="{{ $photo->thumbnail_url ?: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%231a1a1a%22/%3E%3C/svg%3E' }}" alt="Photo">
                                     @if($project->hero_photo_id === $photo->id)
-                                        <span class="photo-cover-badge">Cover</span>
+                                        <span class="photo-cover-badge" style="display:inline-flex; align-items:center; gap:4px;">
+                                            <i data-lucide="star" style="width: 10px; height: 10px; fill: currentColor;"></i>
+                                            Cover
+                                        </span>
                                     @endif
                                     <div class="photo-overlay">
                                         @if($project->hero_photo_id !== $photo->id && $photo->is_processed)
                                             <form action="{{ route('admin.projects.photos.hero', [$project->id, $photo->id]) }}" method="POST">
                                                 @csrf
-                                                <button type="submit" class="photo-cover-btn">Set as cover</button>
+                                                <button type="submit" class="photo-cover-btn" style="display:inline-flex; align-items:center; gap:4px;">
+                                                    <i data-lucide="star" style="width: 12px; height: 12px;"></i>
+                                                    Set cover
+                                                </button>
                                             </form>
                                         @else
                                             <span></span>
@@ -112,7 +136,9 @@
                                         <form action="{{ route('admin.projects.photos.destroy', [$project->id, $photo->id]) }}" method="POST" onsubmit="return confirm('Delete this photo?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="photo-delete-btn">×</button>
+                                            <button type="submit" class="photo-delete-btn" title="Delete photo">
+                                                <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
+                                            </button>
                                         </form>
                                     </div>
                                 </div>
@@ -139,8 +165,9 @@
 
         <!-- Target Gallery Selector for loose photos -->
         <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 12px 16px; border-radius: 6px;">
-            <label for="target-gallery-select" style="font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 0;">
-                📁 Target gallery for individual photos:
+            <label for="target-gallery-select" style="font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 0; display: inline-flex; align-items: center; gap: 6px;">
+                <i data-lucide="folder" style="width: 15px; height: 15px;"></i>
+                <span>Target gallery for individual photos:</span>
             </label>
             <select id="target-gallery-select" class="form-control" style="width: auto; min-width: 220px; padding: 6px 12px; font-size: 13px;">
                 <option value="">Auto (Folder name or "Unsorted")</option>
@@ -158,11 +185,7 @@
         <!-- Enhanced Dropzone Area -->
         <div class="upload-dropzone" id="upload-dropzone" data-project-id="{{ $project->id }}">
             <div class="upload-icon">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
+                <i data-lucide="upload-cloud" style="width: 36px; height: 36px;"></i>
             </div>
             <p style="font-size:17px; font-weight:600; margin-bottom:6px; color: white;">
                 Drag & Drop Folders or Photos Here
@@ -173,21 +196,18 @@
             
             <div class="dropzone-actions">
                 <button type="button" class="btn btn-primary" id="btn-browse-folders" style="display:inline-flex; align-items:center; gap:8px;">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
-                    </svg>
+                    <i data-lucide="folder-plus" style="width: 16px; height: 16px;"></i>
                     <span>Choose Folders</span>
                 </button>
                 <button type="button" class="btn btn-secondary" id="btn-browse-files" style="display:inline-flex; align-items:center; gap:8px;">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
+                    <i data-lucide="images" style="width: 16px; height: 16px;"></i>
                     <span>Choose Photos</span>
                 </button>
             </div>
 
-            <div class="dropzone-tip">
-                <span>💡 Dragging folders directly from Explorer creates a separate gallery for each folder without security prompts.</span>
+            <div class="dropzone-tip" style="display:flex; align-items:center; justify-content:center; gap:6px;">
+                <i data-lucide="info" style="width: 14px; height: 14px; flex-shrink: 0;"></i>
+                <span>Dragging folders directly from Explorer creates a separate gallery for each folder without security prompts.</span>
             </div>
         </div>
 
@@ -195,13 +215,16 @@
         <div class="upload-dashboard" id="upload-dashboard" style="display:none;">
             <!-- Completion Success Banner -->
             <div class="upload-complete-banner" id="upload-complete-banner" style="display:none;">
-                <div class="complete-icon">✓</div>
+                <div class="complete-icon">
+                    <i data-lucide="check-circle" style="width: 24px; height: 24px;"></i>
+                </div>
                 <div class="complete-info">
                     <h4 id="complete-title">Upload Completed!</h4>
                     <p id="complete-subtitle">All photos have been processed.</p>
                 </div>
-                <button type="button" class="btn btn-primary" id="btn-goto-gallery">
-                    Go to Gallery Tabs →
+                <button type="button" class="btn btn-primary" id="btn-goto-gallery" style="display:inline-flex; align-items:center; gap:8px;">
+                    <span>Go to Gallery Tabs</span>
+                    <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
                 </button>
             </div>
 
@@ -248,7 +271,9 @@
             <div class="upload-details-accordion">
                 <button type="button" class="accordion-toggle" id="toggle-file-details">
                     <span id="details-toggle-text">Show detailed file list (0 files)</span>
-                    <span class="toggle-arrow">▼</span>
+                    <span class="toggle-arrow">
+                        <i data-lucide="chevron-down" style="width: 14px; height: 14px;"></i>
+                    </span>
                 </button>
                 <div class="accordion-body" id="file-details-body" style="display:none;">
                     <div class="file-details-list" id="progress-list">
@@ -361,8 +386,9 @@
                         <div style="background: rgba(234, 179, 8, 0.08); border: 1px solid rgba(234, 179, 8, 0.35); padding: 16px; border-radius: 6px; margin-bottom: 16px;">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
                                 <div>
-                                    <p style="font-size:14px; color: #eab308; margin-bottom: 4px; font-weight: 600;">
-                                        ⚠️ ZIP Archive is Outdated!
+                                    <p style="font-size:14px; color: #eab308; margin-bottom: 4px; font-weight: 600; display:flex; align-items:center; gap:6px;">
+                                        <i data-lucide="alert-triangle" style="width: 16px; height: 16px;"></i>
+                                        <span>ZIP Archive is Outdated!</span>
                                     </p>
                                     <p style="font-size:13px; color: var(--text-secondary); margin-bottom: 4px;">
                                         The current archive contains <strong>{{ $zipInfo['files_count'] }}</strong> photos ({{ $zipInfo['formatted_size'] }}), but the project now has <strong>{{ $zipInfo['project_photos_count'] }}</strong> photos.
@@ -372,11 +398,13 @@
                                     </p>
                                 </div>
                                 <div style="display:flex; gap:8px; align-items:center;">
-                                    <button type="submit" form="generate-zip-form" class="btn btn-primary btn-sm" style="background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600;">
-                                        🔄 Rebuild ZIP (Delete Old)
+                                    <button type="submit" form="generate-zip-form" class="btn btn-primary btn-sm" style="background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600; display:inline-flex; align-items:center; gap:6px;">
+                                        <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
+                                        <span>Rebuild ZIP (Delete Old)</span>
                                     </button>
-                                    <button type="submit" form="delete-zip-form" class="btn btn-secondary btn-sm" style="color: var(--danger); border-color: rgba(239,68,68,0.3);">
-                                        Delete ZIP
+                                    <button type="submit" form="delete-zip-form" class="btn btn-secondary btn-sm" style="color: var(--danger); border-color: rgba(239,68,68,0.3); display:inline-flex; align-items:center; gap:6px;">
+                                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                        <span>Delete ZIP</span>
                                     </button>
                                 </div>
                             </div>
@@ -385,8 +413,9 @@
                         <div style="background: rgba(34, 197, 94, 0.06); border: 1px solid rgba(34, 197, 94, 0.25); padding: 16px; border-radius: 6px; margin-bottom: 16px;">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
                                 <div>
-                                    <p style="font-size:14px; color: var(--success, #22c55e); margin-bottom: 4px; font-weight: 600;">
-                                        ✓ ZIP Archive is up to date
+                                    <p style="font-size:14px; color: var(--success, #22c55e); margin-bottom: 4px; font-weight: 600; display:flex; align-items:center; gap:6px;">
+                                        <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
+                                        <span>ZIP Archive is up to date</span>
                                     </p>
                                     <p style="font-size:13px; color: var(--text-secondary); margin-bottom: 4px;">
                                         Contains all <strong>{{ $zipInfo['files_count'] }}</strong> photos ({{ $zipInfo['formatted_size'] }}). Clients can download it immediately.
@@ -396,11 +425,13 @@
                                     </p>
                                 </div>
                                 <div style="display:flex; gap:8px; align-items:center;">
-                                    <button type="submit" form="generate-zip-form" class="btn btn-secondary btn-sm" title="Recompile archive from scratch">
-                                        🔄 Rebuild ZIP
+                                    <button type="submit" form="generate-zip-form" class="btn btn-secondary btn-sm" title="Recompile archive from scratch" style="display:inline-flex; align-items:center; gap:6px;">
+                                        <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
+                                        <span>Rebuild ZIP</span>
                                     </button>
-                                    <button type="submit" form="delete-zip-form" class="btn btn-secondary btn-sm" style="color: var(--danger); border-color: rgba(239,68,68,0.3);">
-                                        Delete ZIP
+                                    <button type="submit" form="delete-zip-form" class="btn btn-secondary btn-sm" style="color: var(--danger); border-color: rgba(239,68,68,0.3); display:inline-flex; align-items:center; gap:6px;">
+                                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                        <span>Delete ZIP</span>
                                     </button>
                                 </div>
                             </div>
@@ -408,8 +439,9 @@
                     @endif
                 @else
                     <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 16px; border-radius: 6px; margin-bottom: 16px; color: var(--text-secondary);">
-                        <p style="font-size:13px; margin-bottom: 0;">
-                            No active ZIP archive on the server. Clients will not be able to download all photos as a ZIP until an archive is compiled or uploaded.
+                        <p style="font-size:13px; margin-bottom: 0; display:flex; align-items:center; gap:8px;">
+                            <i data-lucide="archive" style="width: 16px; height: 16px;"></i>
+                            <span>No active ZIP archive on the server. Clients will not be able to download all photos as a ZIP until an archive is compiled or uploaded.</span>
                         </p>
                     </div>
                 @endif
@@ -421,8 +453,9 @@
 
                     @if($isTooLarge)
                         <div style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); padding: 12px; border-radius: 6px; color: var(--text-secondary); font-size: 13px; line-height: 1.5;">
-                            <p style="color: var(--danger); font-weight: 500; margin-bottom: 6px;">
-                                ⚠️ Size exceeds 2 GB threshold
+                            <p style="color: var(--danger); font-weight: 500; margin-bottom: 6px; display:flex; align-items:center; gap:6px;">
+                                <i data-lucide="alert-triangle" style="width: 15px; height: 15px;"></i>
+                                <span>Size exceeds 2 GB threshold</span>
                             </p>
                             To prevent server timeouts, compiling via the browser is disabled. Please package the photos on your computer and upload the ZIP archive directly via FTP to:
                             <br><code style="display: block; margin-top: 8px; background: #000; padding: 6px 10px; border-radius: 4px; color: #fff; font-size:12px;">www/nagiyev_studio/gallery.nagiyev.com/storage/app/zips/{{ $project->id }}.zip</code>
@@ -432,8 +465,9 @@
                             <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0;">
                                 {{ $zipInfo ? 'You can recompile the ZIP archive directly on the server (deletes the previous archive and packages current photos).' : 'You can compile the ZIP archive directly on the server (packages files without compression, takes only a few seconds).' }}
                             </p>
-                            <button type="submit" form="generate-zip-form" class="btn btn-secondary" style="width: fit-content; background: var(--accent); color: #000; border-color: var(--accent); padding: 8px 16px; font-weight: 500;">
-                                ⚙ {{ $zipInfo ? 'Recompile ZIP Archive' : 'Compile ZIP on Server' }}
+                            <button type="submit" form="generate-zip-form" class="btn btn-secondary" style="width: fit-content; background: var(--accent); color: #000; border-color: var(--accent); padding: 8px 16px; font-weight: 500; display:inline-flex; align-items:center; gap:8px;">
+                                <i data-lucide="archive" style="width: 16px; height: 16px;"></i>
+                                <span>{{ $zipInfo ? 'Recompile ZIP Archive' : 'Compile ZIP on Server' }}</span>
                             </button>
                         </div>
                     @endif
@@ -451,22 +485,29 @@
                             accept=".zip"
                             style="max-width: 400px;"
                         >
-                        <p style="font-size:12px; color: var(--text-muted); margin-bottom: 0; line-height: 1.4;">
-                            💡 <strong>Web limit warning:</strong> For larger files (over 100MB), web upload might fail. In that case, upload the ZIP archive via FTP to the folder above.
+                        <p style="font-size:12px; color: var(--text-muted); margin-bottom: 0; line-height: 1.4; display:flex; align-items:flex-start; gap:6px;">
+                            <i data-lucide="info" style="width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px;"></i>
+                            <span><strong>Web limit warning:</strong> For larger files (over 100MB), web upload might fail. In that case, upload the ZIP archive via FTP to the folder above.</span>
                         </p>
                     </div>
                 </div>
             </div>
 
             <div style="display: flex; gap: 16px; border-top: 1px solid var(--border-color); padding-top: 24px;">
-                <button type="submit" class="btn btn-primary">Save Configuration</button>
+                <button type="submit" class="btn btn-primary" style="display:inline-flex; align-items:center; gap:8px;">
+                    <i data-lucide="save" style="width: 16px; height: 16px;"></i>
+                    <span>Save Configuration</span>
+                </button>
             </div>
         </form>
     </div>
 
     <!-- Danger Zone Delete -->
     <div class="card" style="border-color: rgba(239, 68, 68, 0.2); background-color: rgba(239, 68, 68, 0.02);">
-        <h3 class="card-title" style="color: var(--danger);">Danger Zone</h3>
+        <h3 class="card-title" style="color: var(--danger); display:flex; align-items:center; gap:8px;">
+            <i data-lucide="alert-triangle" style="width: 18px; height: 18px;"></i>
+            <span>Danger Zone</span>
+        </h3>
         <p style="color: var(--text-secondary); font-size:13px; margin-bottom:20px;">
             Permanently delete this project. All photos, originals, and zip downloads will be deleted from the server disk. This action is irreversible.
         </p>
@@ -474,7 +515,10 @@
         <form action="{{ route('admin.projects.destroy', $project->id) }}" method="POST" onsubmit="return confirm('ARE YOU ABSOLUTELY SURE? THIS DELETES ALL PHOTO IMAGES PERMANENTLY.');">
             @csrf
             @method('DELETE')
-            <button type="submit" class="btn btn-danger">Delete Project</button>
+            <button type="submit" class="btn btn-danger" style="display:inline-flex; align-items:center; gap:8px;">
+                <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                <span>Delete Project</span>
+            </button>
         </form>
     </div>
 </div>
@@ -483,11 +527,17 @@
 <div class="tab-content" id="stats-tab">
     <div class="stats-info-grid">
         <div class="metric-card">
-            <span class="metric-label">Total Unique Visits</span>
+            <span class="metric-label" style="display:flex; align-items:center; gap:6px;">
+                <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                Total Unique Visits
+            </span>
             <div class="metric-value">{{ $project->total_views }}</div>
         </div>
         <div class="metric-card">
-            <span class="metric-label">Client Media Downloads</span>
+            <span class="metric-label" style="display:flex; align-items:center; gap:6px;">
+                <i data-lucide="download" style="width: 14px; height: 14px;"></i>
+                Client Media Downloads
+            </span>
             <div class="metric-value">{{ $project->total_downloads }}</div>
         </div>
     </div>

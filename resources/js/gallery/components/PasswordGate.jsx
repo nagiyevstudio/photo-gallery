@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Lock } from 'lucide-react';
 import { client } from '../api/client';
 
 export default function PasswordGate({ projectSlug, onSuccess }) {
@@ -37,7 +38,9 @@ export default function PasswordGate({ projectSlug, onSuccess }) {
     return (
         <div className="password-gate-overlay">
             <div className={`password-card ${shake ? 'shake' : ''}`}>
-                <div style={{ fontSize: '40px', marginBottom: '16px', color: 'var(--accent)' }}>🔒</div>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px', color: 'var(--accent)' }}>
+                    <Lock size={40} strokeWidth={1.75} />
+                </div>
                 <h3>Protected Gallery</h3>
                 <p>Please enter the password provided to access this album.</p>
                 

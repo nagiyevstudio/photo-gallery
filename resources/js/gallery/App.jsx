@@ -8,6 +8,7 @@ import PasswordGate from './components/PasswordGate';
 import Spinner from './components/Spinner';
 import Footer from './components/Footer';
 import { useAntiTheft } from './hooks/useAntiTheft';
+import { Clock, Search } from 'lucide-react';
 
 export default function App() {
     const [projectSlug, setProjectSlug] = useState('');
@@ -130,9 +131,9 @@ export default function App() {
     if (error) {
         return (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', padding: '24px', textAlign: 'center' }}>
-                <span style={{ fontSize: '48px', marginBottom: '16px' }}>
-                    {error.type === 'expired' ? '⏳' : '🔍'}
-                </span>
+                <div style={{ marginBottom: '16px', color: 'var(--accent)' }}>
+                    {error.type === 'expired' ? <Clock size={48} strokeWidth={1.5} /> : <Search size={48} strokeWidth={1.5} />}
+                </div>
                 <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', marginBottom: '8px' }}>
                     {error.type === 'expired' ? 'Gallery Expired' : 'Project Not Found'}
                 </h2>

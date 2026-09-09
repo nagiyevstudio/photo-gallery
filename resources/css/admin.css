@@ -978,6 +978,10 @@ body {
 .file-status-icon {
     font-size: 12px;
     width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     text-align: center;
     flex-shrink: 0;
 }
@@ -1081,6 +1085,10 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s ease, border-color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
 }
 
 .photo-cover-btn:hover {
@@ -1273,4 +1281,25 @@ body {
 .chart-tooltip-count {
     font-size: 12px;
     color: #fff;
+}
+
+/* Lucide Icons Standard Styling */
+.lucide,
+svg.lucide {
+    display: inline-block;
+    vertical-align: middle;
+    width: 1em;
+    height: 1em;
+    stroke-width: 2;
+    flex-shrink: 0;
+}
+
+.lucide-spin {
+    animation: spin 0.8s linear infinite;
+}
+
+.nav-link .lucide,
+.nav-link svg.lucide {
+    width: 18px;
+    height: 18px;
 }

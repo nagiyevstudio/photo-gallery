@@ -1,4 +1,5 @@
 import React from 'react';
+import { Calendar } from 'lucide-react';
 
 function formatShortDate(dateInput) {
     if (!dateInput) return '';
@@ -27,6 +28,7 @@ export default function ExpirationBadge({ date }) {
 
     return (
         <div className="expiration-badge" title={`Expire: ${formattedDate}`}>
+            <Calendar size={13} style={{ opacity: 0.7 }} />
             <span className="expiration-label">Expire:</span>
             <span className="expiration-date">{formattedDate}</span>
         </div>
