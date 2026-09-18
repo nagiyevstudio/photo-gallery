@@ -679,7 +679,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 8px 0;
+    padding: 12px 26px 0;
     gap: 16px;
 }
 
@@ -732,6 +732,10 @@ body {
 
     .photo-stack-wrapper {
         padding: 16px 20px 14px;
+    }
+
+    .gallery-card-content {
+        padding: 10px 22px 0;
     }
 
     .gallery-card-title {
