@@ -73,7 +73,7 @@ export default function App() {
     useEffect(() => {
         if (!project?.title) return;
 
-        document.title = `${project.title} | Faik Nagiyev Photography`;
+        document.title = project.title;
     }, [project?.title]);
 
     // Fetch photos when active gallery changes

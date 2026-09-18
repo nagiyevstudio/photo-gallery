@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photo Gallery | Faik Nagiyev Photography</title>
+    <title>Photo Gallery</title>
     <link rel="icon" type="image/png" sizes="64x64" href="{{ asset('favicon.png') }}">
     <!-- Browser chrome follows the active color scheme -->
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#050505">
