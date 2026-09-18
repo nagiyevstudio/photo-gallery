@@ -677,17 +677,10 @@ body {
 /* Gallery Card Info & Action */
 .gallery-card-content {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
-    padding: 12px 10px 0;
+    padding: 12px 8px 0;
     gap: 16px;
-}
-
-.gallery-card-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 0;
 }
 
 .gallery-card-title {
@@ -706,24 +699,12 @@ body {
     color: var(--accent);
 }
 
-.gallery-card-count {
-    font-size: 13px;
-    color: var(--text-secondary);
-    letter-spacing: 0.3px;
-}
-
 .gallery-card-action {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    justify-content: center;
     color: var(--accent);
-    white-space: nowrap;
-    padding-bottom: 2px;
-    transition: transform var(--transition-fast);
+    flex-shrink: 0;
 }
 
 .action-arrow {

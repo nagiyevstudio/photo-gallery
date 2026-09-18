@@ -85,15 +85,9 @@ export default function GalleriesOverview({ galleries, onSelectGallery }) {
                                 </div>
 
                                 <div className="gallery-card-content">
-                                    <div className="gallery-card-info">
-                                        <h3 className="gallery-card-title">{gallery.title}</h3>
-                                        <span className="gallery-card-count">
-                                            {count} {count === 1 ? 'photo' : 'photos'}
-                                        </span>
-                                    </div>
+                                    <h3 className="gallery-card-title">{gallery.title}</h3>
                                     <div className="gallery-card-action" aria-hidden="true">
-                                        <span className="action-text">Explore</span>
-                                        <ArrowRight size={16} className="action-arrow" />
+                                        <ArrowRight size={18} className="action-arrow" />
                                     </div>
                                 </div>
                             </button>
