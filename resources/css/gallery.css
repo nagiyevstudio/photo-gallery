@@ -24,6 +24,16 @@
     --transition-fast: 150ms ease;
     --transition-normal: 300ms ease;
     --transition-slow: 600ms cubic-bezier(0.16, 1, 0.3, 1);
+
+    --tabs-fade-transparent: rgba(10, 10, 10, 0);
+    --tabs-fade-mid: rgba(10, 10, 10, 0.85);
+    --tabs-fade-solid: #050505;
+    --dropdown-bg: #121212;
+    --dropdown-border: rgba(255, 255, 255, 0.1);
+    --dropdown-shadow: 0 14px 36px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.3);
+    --dropdown-item-hover: rgba(255, 255, 255, 0.07);
+    --scroll-btn-bg: rgba(255, 255, 255, 0.12);
+    --scroll-btn-border: rgba(255, 255, 255, 0.15);
 }
 
 /* Light theme — automatically follows the OS/browser preference */
@@ -45,6 +55,16 @@
         --accent-glow: rgba(176, 141, 95, 0.2);
 
         --border: rgba(0, 0, 0, 0.08);
+
+        --tabs-fade-transparent: rgba(250, 249, 247, 0);
+        --tabs-fade-mid: rgba(250, 249, 247, 0.88);
+        --tabs-fade-solid: #faf9f7;
+        --dropdown-bg: #ffffff;
+        --dropdown-border: rgba(0, 0, 0, 0.09);
+        --dropdown-shadow: 0 14px 36px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+        --dropdown-item-hover: rgba(0, 0, 0, 0.05);
+        --scroll-btn-bg: rgba(255, 255, 255, 0.88);
+        --scroll-btn-border: rgba(0, 0, 0, 0.1);
     }
 
     .password-input {
@@ -229,13 +249,7 @@ body {
     gap: 32px;
     height: 100%;
     align-items: center;
-    overflow-x: auto;
-    scrollbar-width: none; /* Firefox */
-    -webkit-overflow-scrolling: touch;
-}
-
-.tabs-list::-webkit-scrollbar {
-    display: none; /* Chrome/Safari */
+    overflow: visible;
 }
 
 .tab-item {
@@ -249,6 +263,7 @@ body {
     padding: 20px 4px;
     white-space: nowrap;
     transition: color var(--transition-fast);
+    font-family: inherit;
 }
 
 .tab-item:hover, .tab-item.active {
@@ -263,6 +278,130 @@ body {
     width: 100%;
     height: 2px;
     background-color: var(--accent);
+}
+
+/* Tabs "More" Dropdown */
+.tabs-dropdown-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.tab-dropdown-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tab-chevron-icon {
+    display: inline-block;
+    transition: transform var(--transition-fast);
+    color: currentColor;
+}
+
+.tab-chevron-icon.rotated {
+    transform: rotate(180deg);
+}
+
+.tab-dropdown-menu {
+    position: absolute;
+    top: calc(100% - 6px);
+    right: 0;
+    min-width: 180px;
+    max-width: 320px;
+    max-height: 400px;
+    overflow-y: auto;
+    background-color: var(--dropdown-bg);
+    border: 1px solid var(--dropdown-border);
+    border-radius: 10px;
+    box-shadow: var(--dropdown-shadow);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 200;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    animation: tabDropdownAppear 160ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes tabDropdownAppear {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.tab-dropdown-menu::-webkit-scrollbar {
+    width: 4px;
+}
+
+.tab-dropdown-menu::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+
+.tab-dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 14px;
+    border: none;
+    background: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-secondary);
+    text-align: left;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.tab-dropdown-item:hover {
+    background-color: var(--dropdown-item-hover);
+    color: var(--text-primary);
+}
+
+.tab-dropdown-item.active {
+    color: var(--accent);
+    background-color: var(--accent-glow);
+    font-weight: 600;
+}
+
+.tab-dropdown-item-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--accent);
+    flex-shrink: 0;
+    margin-left: 12px;
+}
+
+/* Hidden measurement ruler for desktop tabs calculation */
+.tabs-measure-ruler {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+    visibility: hidden;
+    pointer-events: none;
+    white-space: nowrap;
+    display: flex;
+    gap: 32px;
+}
+
+/* Mobile Scroll Indicators */
+.tabs-scroll-indicator {
+    display: none;
 }
 
 /* Hero Actions CTA */
@@ -636,14 +775,25 @@ body {
     }
 
     .tabs-bar {
-        padding: 0 16px;
+        padding: 0;
         height: 52px;
         justify-content: flex-start;
+        position: sticky;
     }
 
     .tabs-list {
         gap: 20px;
-        padding: 0 4px;
+        padding: 0 20px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        scroll-behavior: smooth;
+        width: 100%;
+    }
+
+    .tabs-list::-webkit-scrollbar {
+        display: none;
     }
     
     .tab-item {
@@ -651,8 +801,120 @@ body {
         font-size: 12px;
         letter-spacing: 1px;
     }
+
+    .tabs-scroll-indicator {
+        display: flex;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 56px;
+        align-items: center;
+        z-index: 10;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity var(--transition-fast), visibility var(--transition-fast);
+        visibility: hidden;
+    }
+
+    .tabs-scroll-indicator.visible {
+        opacity: 1;
+        pointer-events: auto;
+        visibility: visible;
+    }
+
+    .tabs-scroll-indicator.left {
+        left: 0;
+        justify-content: flex-start;
+        padding-left: 8px;
+        background: linear-gradient(to left, var(--tabs-fade-transparent) 0%, var(--tabs-fade-mid) 45%, var(--tabs-fade-solid) 100%);
+    }
+
+    .tabs-scroll-indicator.right {
+        right: 0;
+        justify-content: flex-end;
+        padding-right: 8px;
+        background: linear-gradient(to right, var(--tabs-fade-transparent) 0%, var(--tabs-fade-mid) 45%, var(--tabs-fade-solid) 100%);
+    }
+
+    .tabs-scroll-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: var(--scroll-btn-bg);
+        border: 1px solid var(--scroll-btn-border);
+        color: var(--text-primary);
+        cursor: pointer;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+        transition: transform var(--transition-fast), background-color var(--transition-fast);
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .tabs-scroll-btn:active {
+        transform: scale(0.92);
+    }
     
     .grid-container {
         padding: 6px;
     }
+
+    .scroll-to-top-btn {
+        bottom: 24px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+    }
 }
+
+/* Floating Scroll To Top Button */
+.scroll-to-top-btn {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background-color: var(--dropdown-bg);
+    border: 1px solid var(--dropdown-border);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 90;
+    box-shadow: var(--dropdown-shadow);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(12px) scale(0.9);
+    transition: opacity var(--transition-fast), 
+                visibility var(--transition-fast), 
+                transform var(--transition-fast), 
+                color var(--transition-fast), 
+                border-color var(--transition-fast),
+                box-shadow var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.scroll-to-top-btn.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.scroll-to-top-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4), 0 0 12px var(--accent-glow);
+}
+
+.scroll-to-top-btn:active {
+    transform: translateY(0) scale(0.95);
+}
+

@@ -7,6 +7,7 @@ import Lightbox from './components/Lightbox';
 import PasswordGate from './components/PasswordGate';
 import Spinner from './components/Spinner';
 import Footer from './components/Footer';
+import ScrollToTopButton from './components/ScrollToTopButton';
 import { useAntiTheft } from './hooks/useAntiTheft';
 import { Clock, Search } from 'lucide-react';
 
@@ -192,6 +193,9 @@ export default function App() {
 
             {/* 5. Minimalistic footer */}
             <Footer />
+
+            {/* 6. Floating Scroll-to-top button */}
+            <ScrollToTopButton />
         </div>
     );
 }
