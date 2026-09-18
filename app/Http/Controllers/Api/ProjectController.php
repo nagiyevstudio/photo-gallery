@@ -22,6 +22,13 @@ class ProjectController extends Controller
                 'title' => $gallery->title,
                 'slug' => $gallery->slug,
                 'photo_count' => $gallery->photos->count(),
+                'preview_photos' => $gallery->photos->take(3)->map(function ($photo) {
+                    return [
+                        'id' => $photo->id,
+                        'thumbnail_url' => $photo->thumbnail_url,
+                        'aspect_ratio' => $photo->aspect_ratio,
+                    ];
+                })->values(),
             ];
         });
 

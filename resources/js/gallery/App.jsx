@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { client } from './api/client';
 import HeroSection from './components/HeroSection';
 import GalleryTabs from './components/GalleryTabs';
+import GalleriesOverview from './components/GalleriesOverview';
 import JustifiedGrid from './components/JustifiedGrid';
 import Lightbox from './components/Lightbox';
 import PasswordGate from './components/PasswordGate';
@@ -43,8 +44,10 @@ export default function App() {
             const data = await client.get(`/projects/${projectSlug}`);
             setProject(data.project);
             
-            // Set first gallery active by default
-            if (data.project.galleries?.length > 0) {
+            // Set overview if 2+ galleries, or open directly if 1 gallery
+            if (data.project.galleries?.length > 1) {
+                setActiveGallerySlug('overview');
+            } else if (data.project.galleries?.length === 1) {
                 setActiveGallerySlug(data.project.galleries[0].slug);
             }
             setIsPasswordRequired(false);
@@ -75,7 +78,7 @@ export default function App() {
 
     // Fetch photos when active gallery changes
     useEffect(() => {
-        if (!projectSlug || !activeGallerySlug) return;
+        if (!projectSlug || !activeGallerySlug || activeGallerySlug === 'overview') return;
 
         const fetchPhotos = async () => {
             setIsLoadingPhotos(true);
@@ -147,6 +150,14 @@ export default function App() {
 
     if (!project) return null;
 
+    const handleGallerySelect = (slug) => {
+        setActiveGallerySlug(slug);
+        const tabsBar = document.getElementById('tabs-navigation-bar');
+        if (tabsBar) {
+            tabsBar.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
     return (
         <div style={{ backgroundColor: 'var(--bg-primary)', minHeight: '100vh' }}>
             {/* 1. Hero Section with Title, CTA Actions (Download & Expiry), and Byline */}
@@ -166,8 +177,13 @@ export default function App() {
                 onTabChange={setActiveGallerySlug}
             />
 
-            {/* 3. Photo Grid Layout */}
-            {isLoadingPhotos ? (
+            {/* 3. Content: Collections Overview or Photo Grid Layout */}
+            {activeGallerySlug === 'overview' ? (
+                <GalleriesOverview 
+                    galleries={project.galleries}
+                    onSelectGallery={handleGallerySelect}
+                />
+            ) : isLoadingPhotos ? (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px' }}>
                     <div className="spinner" style={{ width: '32px', height: '32px' }}></div>
                 </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
-import { ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChevronLeft, Home } from 'lucide-react';
 
 export default function GalleryTabs({ 
     galleries, 
@@ -51,19 +51,23 @@ export default function GalleryTabs({
         // Account for nav-bar padding (32px on each side = 64px) + safety buffer
         const availableWidth = bar.clientWidth - 88;
         const children = ruler.children;
-        if (!children || children.length < galleries.length + 1) return;
+        const showHome = galleries.length > 1;
+        const offset = showHome ? 1 : 0;
+        if (!children || children.length < galleries.length + offset + 1) return;
 
         const gap = 32;
-        let totalTabsWidth = 0;
+        const homeBtnWidth = showHome ? children[0].getBoundingClientRect().width : 0;
+        const moreBtnWidth = children[galleries.length + offset].getBoundingClientRect().width;
+
+        let totalTabsWidth = showHome ? homeBtnWidth : 0;
         const widths = [];
 
         for (let i = 0; i < galleries.length; i++) {
-            const w = children[i].getBoundingClientRect().width;
+            const w = children[i + offset].getBoundingClientRect().width;
             widths.push(w);
-            totalTabsWidth += w + (i > 0 ? gap : 0);
+            const needsGap = showHome || i > 0;
+            totalTabsWidth += w + (needsGap ? gap : 0);
         }
-
-        const moreBtnWidth = children[galleries.length].getBoundingClientRect().width;
 
         // If everything fits without More button
         if (totalTabsWidth <= availableWidth) {
@@ -72,7 +76,8 @@ export default function GalleryTabs({
         }
 
         // Space available for visible tabs when More button is present
-        const maxTabSpace = availableWidth - moreBtnWidth - gap;
+        const homeSpace = showHome ? (homeBtnWidth + gap) : 0;
+        const maxTabSpace = availableWidth - homeSpace - moreBtnWidth - gap;
         let accumulated = 0;
         let count = 0;
 
@@ -179,7 +184,7 @@ export default function GalleryTabs({
     const hasOverflow = !isMobile && visibleCount < galleries.length;
     const visibleGalleries = hasOverflow ? galleries.slice(0, visibleCount) : galleries;
     const overflowGalleries = hasOverflow ? galleries.slice(visibleCount) : [];
-    const isMoreActive = overflowGalleries.some(g => g.slug === activeSlug);
+    const isMoreActive = activeSlug !== 'overview' && overflowGalleries.some(g => g.slug === activeSlug);
 
     return (
         <nav 
@@ -210,6 +215,21 @@ export default function GalleryTabs({
                 ref={tabsListRef}
                 onScroll={isMobile ? checkMobileScroll : undefined}
             >
+                {/* Home / Overview Icon for multi-gallery projects */}
+                {galleries.length > 1 && (
+                    <button
+                        key="overview-home"
+                        className={`tab-item tab-home-item ${activeSlug === 'overview' ? 'active' : ''}`}
+                        onClick={() => onTabChange('overview')}
+                        style={{ background: 'none', border: 'none' }}
+                        type="button"
+                        aria-label="Collections overview"
+                        title="Overview"
+                    >
+                        <Home size={16} strokeWidth={2} />
+                    </button>
+                )}
+
                 {visibleGalleries.map((gallery) => (
                     <button 
                         key={gallery.slug}
@@ -288,6 +308,11 @@ export default function GalleryTabs({
                 className="tabs-measure-ruler"
                 aria-hidden="true"
             >
+                {galleries.length > 1 && (
+                    <span className="tab-item tab-home-item">
+                        <Home size={16} strokeWidth={2} />
+                    </span>
+                )}
                 {galleries.map((gallery) => (
                     <span 
                         key={gallery.slug}
