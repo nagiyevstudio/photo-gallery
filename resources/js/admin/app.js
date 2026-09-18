@@ -33,7 +33,8 @@ import {
     BarChart3,
     ImagePlus,
     ChevronDown,
-    Loader2
+    Loader2,
+    Copy
 } from 'lucide';
 
 const lucideIcons = {
@@ -68,7 +69,8 @@ const lucideIcons = {
     BarChart3,
     ImagePlus,
     ChevronDown,
-    Loader2
+    Loader2,
+    Copy
 };
 
 export function initLucideIcons() {
@@ -80,6 +82,57 @@ Alpine.start();
 
 document.addEventListener('DOMContentLoaded', () => {
     initLucideIcons();
+
+    // Global copy public link button handler
+    document.addEventListener('click', (e) => {
+        const copyBtn = e.target.closest('.btn-copy-link');
+        if (!copyBtn) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        const url = copyBtn.dataset.url;
+        if (!url) return;
+
+        const copySuccess = () => {
+            const originalHtml = copyBtn.innerHTML;
+            copyBtn.classList.add('copied');
+            copyBtn.innerHTML = '<i data-lucide="check" style="width: 14px; height: 14px;"></i>';
+            initLucideIcons();
+
+            setTimeout(() => {
+                copyBtn.classList.remove('copied');
+                copyBtn.innerHTML = originalHtml;
+                initLucideIcons();
+            }, 1800);
+        };
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(url).then(copySuccess).catch(() => {
+                fallbackCopy(url, copySuccess);
+            });
+        } else {
+            fallbackCopy(url, copySuccess);
+        }
+    });
+
+    function fallbackCopy(text, callback) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            if (callback) callback();
+        } catch (err) {
+            console.error('Fallback: unable to copy', err);
+        }
+        document.body.removeChild(textArea);
+    }
 
     // 1. Tab Navigation logic
     const tabButtons = document.querySelectorAll('.tab-btn');

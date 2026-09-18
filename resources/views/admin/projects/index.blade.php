@@ -62,6 +62,14 @@
                             <i data-lucide="calendar" style="width: 12px; height: 12px;"></i>
                             Expires: {{ $project->expires_at->format('M d, Y') }}
                         </span>
+                        <div class="project-footer-actions">
+                            <button type="button" class="project-action-btn btn-copy-link" data-url="{{ route('project.show', $project->slug) }}" title="Copy public link" aria-label="Copy public link">
+                                <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+                            </button>
+                            <a href="{{ route('project.show', $project->slug) }}" target="_blank" rel="noopener noreferrer" class="project-action-btn" title="Open gallery in new tab" aria-label="Open gallery in new tab">
+                                <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

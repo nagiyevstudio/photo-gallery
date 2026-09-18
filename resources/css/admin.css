@@ -642,6 +642,45 @@ body {
     color: var(--text-muted);
 }
 
+.project-footer-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.project-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+    padding: 0;
+}
+
+.project-action-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+}
+
+.project-action-btn:active {
+    transform: translateY(0);
+}
+
+.project-action-btn.copied {
+    border-color: var(--success);
+    color: var(--success);
+    background: rgba(16, 185, 129, 0.1);
+}
+
 /* Tabs */
 .tabs-navigation {
     display: flex;
