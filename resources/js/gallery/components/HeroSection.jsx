@@ -36,7 +36,17 @@ export default function HeroSection({
                         </div>
                     )}
 
-                    <p className="hero-byline">photo.nagiyev.com <span aria-hidden="true">|</span> Photographer Faik Nagiyev</p>
+                    <p className="hero-byline">
+                        <a 
+                            href="https://photo.nagiyev.com/" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="hero-byline-link"
+                        >
+                            photo.nagiyev.com
+                        </a>
+                        <span aria-hidden="true">|</span> Photographer Faik Nagiyev
+                    </p>
                 </div>
                 <div className="scroll-indicator" onClick={handleScrollDown}></div>
             </div>
