@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Share2, Check, Download } from 'lucide-react';
+import { Share2, Check, Download, Play } from 'lucide-react';
 import justifiedLayout from 'justified-layout';
 
 export default function JustifiedGrid({ photos, onPhotoClick, allowDownload }) {
@@ -116,6 +116,11 @@ export default function JustifiedGrid({ photos, onPhotoClick, allowDownload }) {
                                 loading="lazy"
                                 style={{ pointerEvents: 'none' }}
                             />
+                            {photo.is_video && (
+                                <div className="photo-card-video-badge" aria-label="Play video">
+                                    <Play size={20} fill="currentColor" strokeWidth={0} />
+                                </div>
+                            )}
                             <div className="photo-card-overlay">
                                 <button
                                     className="photo-card-action"

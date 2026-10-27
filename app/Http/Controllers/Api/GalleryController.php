@@ -30,6 +30,7 @@ class GalleryController extends Controller
                 'web_url' => $photo->web_url,
                 'width' => $photo->width,
                 'height' => $photo->height,
+                'is_video' => (bool) $photo->is_video,
                 'download_url' => $project->allow_download ? $photo->download_url : null,
             ];
         });

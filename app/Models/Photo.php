@@ -29,11 +29,18 @@ class Photo extends Model
         'web_url',
         'thumbnail_url',
         'aspect_ratio',
+        'is_video',
     ];
 
     public function gallery(): BelongsTo
     {
         return $this->belongsTo(Gallery::class);
+    }
+
+    public function getIsVideoAttribute(): bool
+    {
+        $ext = pathinfo($this->original_filename ?: $this->original_path, PATHINFO_EXTENSION);
+        return in_array(strtolower($ext), ['mp4', 'webm', 'mov']);
     }
 
     public function getWebUrlAttribute(): ?string

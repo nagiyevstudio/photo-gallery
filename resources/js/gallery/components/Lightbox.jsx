@@ -14,14 +14,44 @@ export default function Lightbox({
     useEffect(() => {
         if (!isOpen || photos.length === 0) return;
 
-        const dataSource = photos.map(photo => ({
-            id: photo.id,
-            src: photo.web_url,
-            w: photo.width,
-            h: photo.height,
-            msrc: photo.thumbnail_url,
-            downloadUrl: photo.download_url,
-        }));
+        const dataSource = photos.map(photo => {
+            const isVideo = Boolean(photo.is_video) || (photo.web_url && /\.(mp4|webm|mov)($|\?)/i.test(photo.web_url));
+            if (isVideo) {
+                return {
+                    id: photo.id,
+                    isVideo: true,
+                    type: 'html',
+                    html: `
+                        <div class="pswp-video-wrapper">
+                            <video 
+                                src="${photo.web_url}" 
+                                poster="${photo.thumbnail_url || ''}" 
+                                controls 
+                                playsinline 
+                                preload="metadata"
+                                onclick="event.stopPropagation()"
+                                onpointerdown="event.stopPropagation()"
+                                ontouchstart="event.stopPropagation()"
+                            ></video>
+                        </div>
+                    `,
+                    w: photo.width || 1920,
+                    h: photo.height || 1080,
+                    msrc: photo.thumbnail_url,
+                    downloadUrl: photo.download_url,
+                };
+            }
+
+            return {
+                id: photo.id,
+                isVideo: false,
+                src: photo.web_url,
+                w: photo.width,
+                h: photo.height,
+                msrc: photo.thumbnail_url,
+                downloadUrl: photo.download_url,
+            };
+        });
 
         const pswp = new PhotoSwipe({
             dataSource: dataSource,
@@ -80,16 +110,30 @@ export default function Lightbox({
             });
         });
 
-        // 3. Update URL parameter (?photo=id) on slide transition
+        // 3. Update URL parameter (?photo=id) on slide transition & pause inactive videos
         pswp.on('change', () => {
-            const slideData = pswp.currSlide.data;
-            const url = new URL(window.location.href);
-            url.searchParams.set('photo', slideData.id);
-            window.history.replaceState({}, '', url);
+            const slideData = pswp.currSlide?.data;
+            if (slideData?.id) {
+                const url = new URL(window.location.href);
+                url.searchParams.set('photo', slideData.id);
+                window.history.replaceState({}, '', url);
+            }
+
+            // Pause videos in any non-active slide holders
+            const currHolder = pswp.currSlide?.holder;
+            document.querySelectorAll('.pswp-video-wrapper video').forEach(v => {
+                if (!currHolder || !currHolder.contains(v)) {
+                    v.pause();
+                }
+            });
         });
 
-        // 4. Remove URL parameter on close
+        // 4. Remove URL parameter on close & pause all videos
         pswp.on('close', () => {
+            document.querySelectorAll('.pswp-video-wrapper video').forEach(v => {
+                v.pause();
+            });
+
             const url = new URL(window.location.href);
             url.searchParams.delete('photo');
             window.history.replaceState({}, '', url);
